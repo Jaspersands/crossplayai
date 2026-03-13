@@ -1,0 +1,24 @@
+{
+  "ios": {
+    "boardBlueTileRatioMin": 0.124,
+    "boardBlueTileRatioMinOnBooster": 0.304,
+    "boardWhiteInkRatioMin": 0.018,
+    "rackBlueTileRatioMin": 0.2,
+    "rackWhiteInkRatioMin": 0.018,
+    "ocrMinConfidence": 0.28,
+    "prototypeConfidenceFloor": 0.72,
+    "prototypeOverrideConfidence": 0.62,
+    "prototypeConflictDelta": 0.08
+  },
+  "android": {
+    "boardBlueTileRatioMin": 0.11,
+    "boardBlueTileRatioMinOnBooster": 0.22,
+    "boardWhiteInkRatioMin": 0.018,
+    "rackBlueTileRatioMin": 0.24,
+    "rackWhiteInkRatioMin": 0.018,
+    "ocrMinConfidence": 0.28,
+    "prototypeConfidenceFloor": 0.72,
+    "prototypeOverrideConfidence": 0.62,
+    "prototypeConflictDelta": 0.08
+  }
+}

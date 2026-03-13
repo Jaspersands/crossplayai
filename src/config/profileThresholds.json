@@ -1,0 +1,16 @@
+{
+  "ios": {
+    "boardOccupiedDarkRatio": 0.06,
+    "boardOccupiedVariance": 420,
+    "rackOccupiedDarkRatio": 0.08,
+    "rackOccupiedVariance": 380,
+    "lowConfidence": 0.72
+  },
+  "android": {
+    "boardOccupiedDarkRatio": 0.055,
+    "boardOccupiedVariance": 400,
+    "rackOccupiedDarkRatio": 0.075,
+    "rackOccupiedVariance": 360,
+    "lowConfidence": 0.7
+  }
+}

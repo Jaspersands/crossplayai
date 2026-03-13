@@ -1,0 +1,1260 @@
+{
+  "version": "1.0.0",
+  "source": {
+    "filename": "Capture d’écran . 2026-03-11 à 10.08.33 PM.png",
+    "profile": "ios",
+    "exportedAt": "2026-03-12T08:10:27.369Z"
+  },
+  "board": [
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "B",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "A",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "C",
+        "isBlank": false,
+        "premium": "TW"
+      },
+      {
+        "letter": "K",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "J",
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": "O",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": "D",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "H",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "A",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "Y",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "I",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "A",
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": "W",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "V",
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": "A",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "N",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "S",
+        "isBlank": true,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": "E",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "D",
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "Q",
+        "isBlank": true,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "R",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "E",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "I",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "Z",
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": "I",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "T",
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "R",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "A",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": "W",
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": "S",
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      }
+    ],
+    [
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "DL"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TW"
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": null
+      },
+      {
+        "letter": null,
+        "isBlank": false,
+        "premium": "TL"
+      }
+    ]
+  ],
+  "rack": [
+    {
+      "letter": "U",
+      "isBlank": false
+    },
+    {
+      "letter": "S",
+      "isBlank": false
+    },
+    {
+      "letter": "O",
+      "isBlank": false
+    },
+    {
+      "letter": "E",
+      "isBlank": false
+    },
+    {
+      "letter": "H",
+      "isBlank": false
+    },
+    {
+      "letter": null,
+      "isBlank": true
+    },
+    {
+      "letter": "N",
+      "isBlank": false
+    }
+  ],
+  "parser": {
+    "confidence": 0.916,
+    "lowConfidenceCells": [
+      {
+        "row": 0,
+        "col": 9,
+        "confidence": 0.5606863614807928
+      },
+      {
+        "row": 0,
+        "col": 10,
+        "confidence": 0.502
+      },
+      {
+        "row": 0,
+        "col": 12,
+        "confidence": 0.025499931723305225
+      },
+      {
+        "row": 1,
+        "col": 9,
+        "confidence": 0.2933705741950582
+      },
+      {
+        "row": 2,
+        "col": 5,
+        "confidence": 0.5198314686538316
+      },
+      {
+        "row": 2,
+        "col": 9,
+        "confidence": 0.28319999999999995
+      },
+      {
+        "row": 3,
+        "col": 5,
+        "confidence": 0.03824107205932345
+      },
+      {
+        "row": 3,
+        "col": 7,
+        "confidence": 0.6705
+      },
+      {
+        "row": 3,
+        "col": 8,
+        "confidence": 0.04876199999999999
+      },
+      {
+        "row": 4,
+        "col": 5,
+        "confidence": 0.586
+      },
+      {
+        "row": 7,
+        "col": 4,
+        "confidence": 0.3075
+      },
+      {
+        "row": 7,
+        "col": 7,
+        "confidence": 0.4700848045505179
+      }
+    ]
+  }
+}

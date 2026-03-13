@@ -1,0 +1,242 @@
+{
+  "sourceDir": "/Users/jaspersands/Downloads/corrections",
+  "importedAt": "2026-03-12T08:37:35.580Z",
+  "count": 26,
+  "missingImages": [],
+  "items": [
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-05 à 10.49.53 PM.2026-03-06T16-00-42-551Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-05 à 10.49.53 PM.2026-03-06T16-00-42-551Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-05 à 10.49.53 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:00:42.551Z",
+      "parserConfidence": 0.772,
+      "lowConfidenceCount": 4
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 10.51.55 AM.2026-03-06T15-54-46-699Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 10.51.55 AM.2026-03-06T15-54-46-699Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 10.51.55 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T15:54:46.695Z",
+      "parserConfidence": 0.724,
+      "lowConfidenceCount": 7
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 10.52.11 AM.2026-03-06T15-58-46-506Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 10.52.11 AM.2026-03-06T15-58-46-506Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 10.52.11 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T15:58:46.505Z",
+      "parserConfidence": 0.817,
+      "lowConfidenceCount": 7
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 10.53.22 AM.2026-03-06T15-56-09-861Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 10.53.22 AM.2026-03-06T15-56-09-861Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 10.53.22 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T15:56:09.861Z",
+      "parserConfidence": 0.785,
+      "lowConfidenceCount": 10
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.02.30 AM.2026-03-06T16-04-07-667Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.02.30 AM.2026-03-06T16-04-07-667Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.02.30 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:04:07.666Z",
+      "parserConfidence": 0.859,
+      "lowConfidenceCount": 26
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.04.34 AM.2026-03-06T16-05-09-464Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.04.34 AM.2026-03-06T16-05-09-464Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.04.34 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:05:09.464Z",
+      "parserConfidence": 0.743,
+      "lowConfidenceCount": 10
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.05.24 AM.2026-03-06T16-05-45-756Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.05.24 AM.2026-03-06T16-05-45-756Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.05.24 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:05:45.756Z",
+      "parserConfidence": 0.806,
+      "lowConfidenceCount": 2
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.06.44 AM.2026-03-06T16-07-10-827Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.06.44 AM.2026-03-06T16-07-10-827Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.06.44 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:07:10.826Z",
+      "parserConfidence": 0.63,
+      "lowConfidenceCount": 1
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.08.08 AM.2026-03-06T16-08-34-533Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.08.08 AM.2026-03-06T16-08-34-533Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.08.08 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:08:34.533Z",
+      "parserConfidence": 0.748,
+      "lowConfidenceCount": 5
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.09.07 AM.2026-03-06T16-09-33-489Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.09.07 AM.2026-03-06T16-09-33-489Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.09.07 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:09:33.489Z",
+      "parserConfidence": 0.802,
+      "lowConfidenceCount": 1
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 11.10.27 AM.2026-03-06T16-11-01-011Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 11.10.27 AM.2026-03-06T16-11-01-011Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 11.10.27 AM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:11:01.011Z",
+      "parserConfidence": 0.714,
+      "lowConfidenceCount": 3
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-06 à 2.48.39 PM.2026-03-06T19-50-32-039Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-06 à 2.48.39 PM.2026-03-06T19-50-32-039Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-06 à 2.48.39 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T19:50:32.038Z",
+      "parserConfidence": 0.905,
+      "lowConfidenceCount": 11
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-07 à 5.07.51 PM.2026-03-07T22-08-44-001Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-07 à 5.07.51 PM.2026-03-07T22-08-44-001Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-07 à 5.07.51 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-07T22:08:44.000Z",
+      "parserConfidence": 0.916,
+      "lowConfidenceCount": 5
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-07 à 5.09.41 PM.2026-03-07T22-10-18-930Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-07 à 5.09.41 PM.2026-03-07T22-10-18-930Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-07 à 5.09.41 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-07T22:10:18.930Z",
+      "parserConfidence": 0.925,
+      "lowConfidenceCount": 8
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-07 à 5.10.28 PM.2026-03-07T22-11-22-498Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-07 à 5.10.28 PM.2026-03-07T22-11-22-498Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-07 à 5.10.28 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-07T22:11:22.497Z",
+      "parserConfidence": 0.906,
+      "lowConfidenceCount": 10
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-10 à 7.08.20 PM.2026-03-10T23-09-36-841Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-10 à 7.08.20 PM.2026-03-10T23-09-36-841Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-10 à 7.08.20 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-10T23:09:36.841Z",
+      "parserConfidence": 0.937,
+      "lowConfidenceCount": 11
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-10 à 7.09.58 PM.2026-03-10T23-11-15-351Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-10 à 7.09.58 PM.2026-03-10T23-11-15-351Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-10 à 7.09.58 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-10T23:11:15.350Z",
+      "parserConfidence": 0.883,
+      "lowConfidenceCount": 15
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-10 à 7.35.59 PM.2026-03-10T23-37-21-787Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-10 à 7.35.59 PM.2026-03-10T23-37-21-787Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-10 à 7.35.59 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-10T23:37:21.787Z",
+      "parserConfidence": 0.926,
+      "lowConfidenceCount": 22
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-11 à 10.00.45 PM.2026-03-12T08-01-37-422Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-11 à 10.00.45 PM.2026-03-12T08-01-37-422Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-11 à 10.00.45 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-12T08:01:37.422Z",
+      "parserConfidence": 0.928,
+      "lowConfidenceCount": 3
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-11 à 10.02.10 PM.2026-03-12T08-03-53-196Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-11 à 10.02.10 PM.2026-03-12T08-03-53-196Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-11 à 10.02.10 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-12T08:03:53.196Z",
+      "parserConfidence": 0.921,
+      "lowConfidenceCount": 9
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-11 à 10.04.23 PM.2026-03-12T08-07-43-770Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-11 à 10.04.23 PM.2026-03-12T08-07-43-770Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-11 à 10.04.23 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-12T08:07:43.770Z",
+      "parserConfidence": 0.905,
+      "lowConfidenceCount": 26
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-11 à 10.08.33 PM.2026-03-12T08-10-27-370Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-11 à 10.08.33 PM.2026-03-12T08-10-27-370Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-11 à 10.08.33 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-12T08:10:27.369Z",
+      "parserConfidence": 0.916,
+      "lowConfidenceCount": 12
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-11 à 10.11.35 PM.2026-03-12T08-15-42-915Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-11 à 10.11.35 PM.2026-03-12T08-15-42-915Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-11 à 10.11.35 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-12T08:15:42.915Z",
+      "parserConfidence": 0.879,
+      "lowConfidenceCount": 18
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-11 à 10.16.12 PM.2026-03-12T08-19-34-950Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-11 à 10.16.12 PM.2026-03-12T08-19-34-950Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-11 à 10.16.12 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-12T08:19:34.949Z",
+      "parserConfidence": 0.924,
+      "lowConfidenceCount": 11
+    },
+    {
+      "labelFile": "labels/IMG_8966.2026-03-06T16-01-16-108Z.corrections.json",
+      "imageFile": "images/IMG_8966.2026-03-06T16-01-16-108Z.PNG",
+      "sourceFilename": "IMG_8966.PNG",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:01:16.108Z",
+      "parserConfidence": 0.845,
+      "lowConfidenceCount": 8
+    },
+    {
+      "labelFile": "labels/IMG_8967.2026-03-06T16-01-36-433Z.corrections.json",
+      "imageFile": "images/IMG_8967.2026-03-06T16-01-36-433Z.PNG",
+      "sourceFilename": "IMG_8967.PNG",
+      "profile": "ios",
+      "exportedAt": "2026-03-06T16:01:36.433Z",
+      "parserConfidence": 0.753,
+      "lowConfidenceCount": 1
+    }
+  ]
+}
