@@ -193,7 +193,7 @@ header p {
 }
 
 .board-panel {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .board-legend {
@@ -248,7 +248,7 @@ header p {
 
 .board-grid-wrap {
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   padding: 0.25rem;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -279,6 +279,13 @@ header p {
   border: 1px solid var(--border);
   min-height: var(--cell-size);
   position: relative;
+}
+
+.board-cell {
+  overflow: visible;
+}
+
+.preview-cell {
   overflow: hidden;
 }
 
@@ -362,8 +369,16 @@ header p {
 }
 
 .board-cell:hover .cell-controls,
-.board-cell:focus-within .cell-controls {
+.board-cell:focus-within .cell-controls,
+.board-cell.is-focused .cell-controls {
   display: inline-flex;
+}
+
+.board-cell .cell-controls button {
+  min-height: 30px;
+  min-width: 30px;
+  padding: 0.24rem 0.42rem;
+  font-size: 0.72rem;
 }
 
 .board-cell.low-confidence {
@@ -637,5 +652,22 @@ button.btn-danger {
 
   button {
     padding: 0.45rem 0.6rem;
+  }
+
+  .board-cell .cell-controls button {
+    min-height: 34px;
+    min-width: 34px;
+    padding: 0.3rem 0.5rem;
+  }
+}
+
+@media (hover: none) {
+  .board-cell:hover .cell-controls {
+    display: none;
+  }
+
+  .board-cell:focus-within .cell-controls,
+  .board-cell.is-focused .cell-controls {
+    display: inline-flex;
   }
 }

@@ -1,7 +1,7 @@
 {
   "sourceDir": "/Users/jaspersands/Downloads/corrections",
-  "importedAt": "2026-03-12T08:37:35.580Z",
-  "count": 26,
+  "importedAt": "2026-03-14T02:45:44.735Z",
+  "count": 30,
   "missingImages": [],
   "items": [
     {
@@ -219,6 +219,42 @@
       "exportedAt": "2026-03-12T08:19:34.949Z",
       "parserConfidence": 0.924,
       "lowConfidenceCount": 11
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-12 à 6.00.18 PM.2026-03-13T04-01-16-546Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-12 à 6.00.18 PM.2026-03-13T04-01-16-546Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-12 à 6.00.18 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-13T04:01:16.546Z",
+      "parserConfidence": 0.962,
+      "lowConfidenceCount": 2
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-12 à 6.02.02 PM.2026-03-13T04-03-07-603Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-12 à 6.02.02 PM.2026-03-13T04-03-07-603Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-12 à 6.02.02 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-13T04:03:07.603Z",
+      "parserConfidence": 0.913,
+      "lowConfidenceCount": 12
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-12 à 6.19.37 PM.2026-03-13T04-21-03-659Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-12 à 6.19.37 PM.2026-03-13T04-21-03-659Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-12 à 6.19.37 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-13T04:21:03.659Z",
+      "parserConfidence": 0.872,
+      "lowConfidenceCount": 22
+    },
+    {
+      "labelFile": "labels/Capture d’écran . 2026-03-12 à 6.32.56 PM.2026-03-13T04-34-53-713Z.corrections.json",
+      "imageFile": "images/Capture d’écran . 2026-03-12 à 6.32.56 PM.2026-03-13T04-34-53-713Z.png",
+      "sourceFilename": "Capture d’écran . 2026-03-12 à 6.32.56 PM.png",
+      "profile": "ios",
+      "exportedAt": "2026-03-13T04:34:53.713Z",
+      "parserConfidence": 0.853,
+      "lowConfidenceCount": 26
     },
     {
       "labelFile": "labels/IMG_8966.2026-03-06T16-01-16-108Z.corrections.json",

@@ -1,7 +1,7 @@
 {
   "ios": {
     "boardBlueTileRatioMin": 0.124,
-    "boardBlueTileRatioMinOnBooster": 0.304,
+    "boardBlueTileRatioMinOnBooster": 0.302,
     "boardWhiteInkRatioMin": 0.018,
     "rackBlueTileRatioMin": 0.2,
     "rackWhiteInkRatioMin": 0.018,

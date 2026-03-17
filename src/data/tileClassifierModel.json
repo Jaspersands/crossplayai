@@ -1,0 +1,84 @@
+{
+  "version": "1",
+  "trainedAt": "2026-03-14T22:37:12.794Z",
+  "sourceCount": 24,
+  "board": {
+    "regular": {
+      "featureNames": [
+        "blue",
+        "white",
+        "glyphWhite"
+      ],
+      "featureMeans": [
+        0.075024,
+        0.907667,
+        0.915354
+      ],
+      "featureStds": [
+        0.222429,
+        0.235788,
+        0.230689
+      ],
+      "occupiedCentroid": [
+        2.97105,
+        -2.812277,
+        -2.930973
+      ],
+      "emptyCentroid": [
+        -0.313381,
+        0.296634,
+        0.309154
+      ],
+      "threshold": 0.67,
+      "occupiedCount": 387,
+      "emptyCount": 3669
+    },
+    "booster": {
+      "featureNames": [
+        "blue",
+        "white",
+        "glyphWhite"
+      ],
+      "featureMeans": [
+        0.114215,
+        0.602874,
+        0.783061
+      ],
+      "featureStds": [
+        0.252279,
+        0.344728,
+        0.247711
+      ],
+      "occupiedCentroid": [
+        2.332733,
+        -0.950581,
+        -2.040628
+      ],
+      "emptyCentroid": [
+        -0.384072,
+        0.156508,
+        0.335979
+      ],
+      "threshold": 0.46,
+      "occupiedCount": 190,
+      "emptyCount": 1154
+    }
+  },
+  "rack": {
+    "default": null
+  },
+  "crops": {
+    "boardGlyphCrop": {
+      "left": 0.16,
+      "top": 0.14,
+      "width": 0.68,
+      "height": 0.74
+    },
+    "rackGlyphCrop": {
+      "left": 0.13,
+      "top": 0.2,
+      "width": 0.74,
+      "height": 0.66
+    }
+  }
+}

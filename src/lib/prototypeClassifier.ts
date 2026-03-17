@@ -15,10 +15,12 @@ type RawPrototypeEntry = {
   meanSimilarity?: number;
 };
 
+type RawPrototypeValue = RawPrototypeEntry | RawPrototypeEntry[];
+
 type RawPrototypeCorpus = {
   dimension: number;
-  board: Record<string, RawPrototypeEntry>;
-  rack: Record<string, RawPrototypeEntry>;
+  board: Record<string, RawPrototypeValue>;
+  rack: Record<string, RawPrototypeValue>;
 };
 
 type CompiledPrototypeEntry = {
@@ -63,13 +65,21 @@ function normalizeVector(values: number[]): Float32Array {
 function compileMode(mode: PrototypeMode): CompiledPrototypeEntry[] {
   const entries = corpus[mode] ?? {};
   return Object.entries(entries)
-    .filter(([letter, value]) => /^[A-Z?]$/.test(letter) && Array.isArray(value.vector) && value.vector.length === glyphDimension)
-    .map(([letter, value]) => ({
-      letter,
-      vector: normalizeVector(value.vector),
-      count: value.count,
-      meanSimilarity: value.meanSimilarity ?? 0,
-    }))
+    .flatMap(([letter, rawValue]) => {
+      if (!/^[A-Z?]$/.test(letter)) {
+        return [];
+      }
+
+      const variants = Array.isArray(rawValue) ? rawValue : [rawValue];
+      return variants
+        .filter((value) => Array.isArray(value.vector) && value.vector.length === glyphDimension)
+        .map((value) => ({
+          letter,
+          vector: normalizeVector(value.vector),
+          count: value.count,
+          meanSimilarity: value.meanSimilarity ?? 0,
+        }));
+    })
     .sort((a, b) => b.count - a.count);
 }
 
@@ -163,32 +173,46 @@ export function classifyPrototypeLetter(
   }
 
   const vector = extractGlyphVector(imageData, crop);
-  let best: { entry: CompiledPrototypeEntry; similarity: number } | null = null;
-  let secondBestSimilarity = 0;
+  const bestSimilarityByLetter = new Map<string, number>();
 
   for (const entry of entries) {
     const similarity = cosineSimilarity(vector, entry.vector);
-    if (!best || similarity > best.similarity) {
-      secondBestSimilarity = best?.similarity ?? 0;
-      best = { entry, similarity };
+    const previous = bestSimilarityByLetter.get(entry.letter) ?? -1;
+    if (similarity > previous) {
+      bestSimilarityByLetter.set(entry.letter, similarity);
+    }
+  }
+
+  if (bestSimilarityByLetter.size === 0) {
+    return null;
+  }
+
+  let bestLetter: string | null = null;
+  let bestSimilarity = -1;
+  let secondBestSimilarity = -1;
+  for (const [letter, similarity] of bestSimilarityByLetter.entries()) {
+    if (similarity > bestSimilarity) {
+      secondBestSimilarity = bestSimilarity;
+      bestSimilarity = similarity;
+      bestLetter = letter;
     } else if (similarity > secondBestSimilarity) {
       secondBestSimilarity = similarity;
     }
   }
 
-  if (!best) {
+  if (!bestLetter) {
     return null;
   }
 
-  const margin = best.similarity - secondBestSimilarity;
-  const baseConfidence = clamp01((best.similarity - 0.52) / 0.45);
-  const marginConfidence = clamp01(margin / 0.22);
-  const confidence = clamp01(baseConfidence * 0.65 + marginConfidence * 0.35);
+  const margin = bestSimilarity - Math.max(0, secondBestSimilarity);
+  const baseConfidence = clamp01((bestSimilarity - 0.48) / 0.46);
+  const marginConfidence = clamp01((margin - 0.012) / 0.2);
+  const confidence = clamp01(baseConfidence * 0.68 + marginConfidence * 0.32);
 
   return {
-    letter: best.entry.letter,
+    letter: bestLetter,
     confidence,
-    similarity: best.similarity,
+    similarity: bestSimilarity,
     margin,
   };
 }

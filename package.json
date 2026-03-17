@@ -12,7 +12,10 @@
     "test:e2e": "playwright test -c playwright.config.cjs",
     "calibrate:profiles": "node scripts/calibrate-thresholds.mjs",
     "import:corrections": "node scripts/import-corrections.mjs",
-    "tune:parser": "node scripts/tune-parser-from-corrections.mjs"
+    "tune:parser": "node scripts/tune-parser-from-corrections.mjs",
+    "benchmark:correction": "node scripts/benchmark-correction.mjs",
+    "benchmark:dataset": "node scripts/benchmark-corrections-dataset.mjs",
+    "benchmark:dataset:update-baseline": "node scripts/benchmark-corrections-dataset.mjs --update-baseline"
   },
   "dependencies": {
     "@techstark/opencv-js": "^4.11.0-release.1",

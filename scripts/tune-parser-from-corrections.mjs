@@ -3,13 +3,14 @@ import path from 'node:path';
 import { PNG } from 'pngjs';
 
 const ROOT = process.cwd();
-const MANIFEST_PATH = process.argv[2]
-  ? path.resolve(process.argv[2])
-  : path.join(ROOT, 'fixtures', 'corrections', 'manifest.json');
+const DEFAULT_MANIFEST_PATH = path.join(ROOT, 'fixtures', 'corrections', 'manifest.json');
 const OUTPUT_TUNING = path.join(ROOT, 'src', 'config', 'parserTuning.json');
 const OUTPUT_PROTOTYPES = path.join(ROOT, 'src', 'data', 'letterPrototypes.json');
+const OUTPUT_TILE_CLASSIFIER = path.join(ROOT, 'src', 'data', 'tileClassifierModel.json');
 const OUTPUT_WORD_STATS = path.join(ROOT, 'src', 'data', 'correctionWordStats.json');
 const OUTPUT_REPORT = path.join(ROOT, 'fixtures', 'corrections', 'tuning-report.json');
+const DEFAULT_VALIDATION_RATIO = 0.2;
+const DEFAULT_SPLIT_SEED = 'crossplayai-v1';
 
 const PROFILE_IDS = ['ios', 'android'];
 
@@ -85,6 +86,55 @@ async function readJson(filePath, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function parseCliOptions(argv) {
+  const options = {
+    manifestPath: DEFAULT_MANIFEST_PATH,
+    validationRatio: DEFAULT_VALIDATION_RATIO,
+    splitSeed: DEFAULT_SPLIT_SEED,
+  };
+
+  for (const arg of argv) {
+    if (!arg) {
+      continue;
+    }
+    if (arg.startsWith('--validation-ratio=')) {
+      const raw = Number(arg.split('=')[1]);
+      if (!Number.isFinite(raw) || raw < 0 || raw > 0.5) {
+        throw new Error('--validation-ratio must be between 0 and 0.5');
+      }
+      options.validationRatio = raw;
+      continue;
+    }
+
+    if (arg.startsWith('--split-seed=')) {
+      const raw = arg.slice('--split-seed='.length).trim();
+      options.splitSeed = raw || DEFAULT_SPLIT_SEED;
+      continue;
+    }
+
+    if (arg.startsWith('--')) {
+      throw new Error(`Unknown argument: ${arg}`);
+    }
+
+    options.manifestPath = path.resolve(arg);
+  }
+
+  return options;
+}
+
+function hashString(input) {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function stableFraction(input) {
+  return hashString(input) / 0xffffffff;
 }
 
 function safeProfile(input) {
@@ -370,6 +420,30 @@ function extractGlyphVector(imageData, crop) {
   return vector.map((value) => value * invNorm);
 }
 
+function getGlyphWhiteRatio(imageData, crop) {
+  const startX = Math.max(0, Math.floor(imageData.width * crop.left));
+  const startY = Math.max(0, Math.floor(imageData.height * crop.top));
+  const endX = Math.max(startX + 1, Math.min(imageData.width, Math.ceil(imageData.width * (crop.left + crop.width))));
+  const endY = Math.max(startY + 1, Math.min(imageData.height, Math.ceil(imageData.height * (crop.top + crop.height))));
+
+  let white = 0;
+  let total = 0;
+  for (let y = startY; y < endY; y += 1) {
+    for (let x = startX; x < endX; x += 1) {
+      const idx = (y * imageData.width + x) * 4;
+      const r = imageData.data[idx];
+      const g = imageData.data[idx + 1];
+      const b = imageData.data[idx + 2];
+      if (isWhiteGlyphPixel(r, g, b)) {
+        white += 1;
+      }
+      total += 1;
+    }
+  }
+
+  return total > 0 ? white / total : 0;
+}
+
 function dotProduct(lhs, rhs) {
   const len = Math.min(lhs.length, rhs.length);
   let sum = 0;
@@ -573,7 +647,209 @@ function tuneRackBlankThreshold(samples, defaultThreshold) {
   return best;
 }
 
+function percentile(values, p) {
+  if (!values.length) {
+    return 0;
+  }
+  const sorted = values.slice().sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * p)));
+  return sorted[idx];
+}
+
+function average(values) {
+  if (!values.length) {
+    return 0;
+  }
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function standardDeviation(values, mean) {
+  if (!values.length) {
+    return 1;
+  }
+  const variance = values.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / values.length;
+  return Math.sqrt(variance);
+}
+
+function classifyOccupancyProbability(features, model) {
+  const normalized = features.map((value, index) => {
+    const std = model.featureStds[index] > 1e-4 ? model.featureStds[index] : 1e-4;
+    return (value - model.featureMeans[index]) / std;
+  });
+
+  const occupiedDistance = normalized.reduce(
+    (sum, value, index) => sum + ((value - model.occupiedCentroid[index]) ** 2),
+    0,
+  );
+  const emptyDistance = normalized.reduce(
+    (sum, value, index) => sum + ((value - model.emptyCentroid[index]) ** 2),
+    0,
+  );
+
+  const occupiedScore = -occupiedDistance;
+  const emptyScore = -emptyDistance;
+  const delta = Math.max(-16, Math.min(16, occupiedScore - emptyScore));
+  return 1 / (1 + Math.exp(-delta));
+}
+
+function tuneOccupancyThreshold(probabilitySamples) {
+  let best = {
+    threshold: 0.5,
+    objective: -Infinity,
+    metrics: null,
+  };
+
+  for (let threshold = 0.2; threshold <= 0.88; threshold += 0.01) {
+    let tp = 0;
+    let fp = 0;
+    let fn = 0;
+    let tn = 0;
+
+    for (const sample of probabilitySamples) {
+      const predicted = sample.probability >= threshold;
+      if (predicted && sample.occupied) {
+        tp += 1;
+      } else if (predicted && !sample.occupied) {
+        fp += 1;
+      } else if (!predicted && sample.occupied) {
+        fn += 1;
+      } else {
+        tn += 1;
+      }
+    }
+
+    const metrics = computeMetrics(tp, fp, fn, tn);
+    const objective = fBeta(metrics.precision, metrics.recall, 0.9) - metrics.fpRate * 0.04;
+
+    if (objective > best.objective + 1e-9) {
+      best = {
+        threshold,
+        objective,
+        metrics,
+      };
+    }
+  }
+
+  return best;
+}
+
+function buildOccupancyClassifier(samples) {
+  const occupiedSamples = samples.filter((sample) => sample.occupied);
+  const emptySamples = samples.filter((sample) => !sample.occupied);
+  if (occupiedSamples.length < 12 || emptySamples.length < 20) {
+    return null;
+  }
+
+  const featureNames = ['blue', 'white', 'glyphWhite'];
+  const featureMeans = featureNames.map((name) => average(samples.map((sample) => sample[name])));
+  const featureStds = featureNames.map((name, index) => {
+    const std = standardDeviation(samples.map((sample) => sample[name]), featureMeans[index]);
+    return std > 1e-4 ? std : 1e-4;
+  });
+
+  const toNormalized = (sample) => featureNames.map((name, index) => (
+    (sample[name] - featureMeans[index]) / featureStds[index]
+  ));
+
+  const occupiedCentroid = featureNames.map((_, index) => average(
+    occupiedSamples.map((sample) => toNormalized(sample)[index]),
+  ));
+  const emptyCentroid = featureNames.map((_, index) => average(
+    emptySamples.map((sample) => toNormalized(sample)[index]),
+  ));
+
+  const model = {
+    featureNames,
+    featureMeans: featureMeans.map((value) => round(value, 6)),
+    featureStds: featureStds.map((value) => round(value, 6)),
+    occupiedCentroid: occupiedCentroid.map((value) => round(value, 6)),
+    emptyCentroid: emptyCentroid.map((value) => round(value, 6)),
+    threshold: 0.5,
+    occupiedCount: occupiedSamples.length,
+    emptyCount: emptySamples.length,
+  };
+
+  const probabilitySamples = samples.map((sample) => ({
+    occupied: sample.occupied,
+    probability: classifyOccupancyProbability([sample.blue, sample.white, sample.glyphWhite], model),
+  }));
+
+  const tuned = tuneOccupancyThreshold(probabilitySamples);
+  model.threshold = round(tuned.threshold, 4);
+
+  const occupiedProbs = probabilitySamples
+    .filter((sample) => sample.occupied)
+    .map((sample) => sample.probability);
+  const emptyProbs = probabilitySamples
+    .filter((sample) => !sample.occupied)
+    .map((sample) => sample.probability);
+
+  return {
+    model,
+    metrics: tuned.metrics
+      ? {
+          precision: round(tuned.metrics.precision, 4),
+          recall: round(tuned.metrics.recall, 4),
+          f1: round(tuned.metrics.f1, 4),
+          fpRate: round(tuned.metrics.fpRate, 4),
+          threshold: round(tuned.threshold, 4),
+        }
+      : null,
+    probabilitySummary: {
+      occupiedP25: round(percentile(occupiedProbs, 0.25), 4),
+      occupiedMedian: round(percentile(occupiedProbs, 0.5), 4),
+      occupiedP75: round(percentile(occupiedProbs, 0.75), 4),
+      emptyP25: round(percentile(emptyProbs, 0.25), 4),
+      emptyMedian: round(percentile(emptyProbs, 0.5), 4),
+      emptyP75: round(percentile(emptyProbs, 0.75), 4),
+    },
+  };
+}
+
 function buildPrototypeCorpus(samples) {
+  const MAX_PROTOTYPES_PER_LABEL = {
+    board: 8,
+    rack: 4,
+  };
+
+  function choosePrototypeIndices(vectors, limit) {
+    if (vectors.length <= limit) {
+      return vectors.map((_, index) => index);
+    }
+
+    const chosen = [0];
+    const minDistances = new Array(vectors.length).fill(Number.POSITIVE_INFINITY);
+
+    while (chosen.length < limit) {
+      const last = vectors[chosen[chosen.length - 1]];
+      for (let index = 0; index < vectors.length; index += 1) {
+        const distance = 1 - dotProduct(vectors[index], last);
+        if (distance < minDistances[index]) {
+          minDistances[index] = distance;
+        }
+      }
+
+      let nextIndex = -1;
+      let nextDistance = -1;
+      for (let index = 0; index < vectors.length; index += 1) {
+        if (chosen.includes(index)) {
+          continue;
+        }
+        if (minDistances[index] > nextDistance) {
+          nextDistance = minDistances[index];
+          nextIndex = index;
+        }
+      }
+
+      if (nextIndex < 0) {
+        break;
+      }
+      chosen.push(nextIndex);
+    }
+
+    return chosen;
+  }
+
   const buckets = {
     board: new Map(),
     rack: new Map(),
@@ -600,9 +876,9 @@ function buildPrototypeCorpus(samples) {
     rack: {},
   };
 
-  const centroids = {
-    board: new Map(),
-    rack: new Map(),
+  const prototypes = {
+    board: [],
+    rack: [],
   };
 
   for (const mode of ['board', 'rack']) {
@@ -610,51 +886,57 @@ function buildPrototypeCorpus(samples) {
       .sort((a, b) => a.label.localeCompare(b.label));
 
     for (const entry of byLabel) {
-      const sum = new Array(GLYPH_DIMENSION).fill(0);
+      const limit = Math.max(1, Math.min(MAX_PROTOTYPES_PER_LABEL[mode], entry.vectors.length));
+      const selected = choosePrototypeIndices(entry.vectors, limit);
+      const rawPrototypes = selected.map((index) => ({
+        vector: entry.vectors[index],
+        count: 0,
+        similaritySum: 0,
+      }));
+
       for (const vector of entry.vectors) {
-        for (let i = 0; i < GLYPH_DIMENSION; i += 1) {
-          sum[i] += vector[i];
+        let bestIndex = 0;
+        let bestSimilarity = -1;
+        for (let index = 0; index < rawPrototypes.length; index += 1) {
+          const similarity = dotProduct(vector, rawPrototypes[index].vector);
+          if (similarity > bestSimilarity) {
+            bestSimilarity = similarity;
+            bestIndex = index;
+          }
         }
+        rawPrototypes[bestIndex].count += 1;
+        rawPrototypes[bestIndex].similaritySum += bestSimilarity;
       }
 
-      const centroid = sum.map((value) => value / entry.vectors.length);
-      let norm = 0;
-      for (const value of centroid) {
-        norm += value * value;
-      }
-      if (norm > 1e-8) {
-        const invNorm = 1 / Math.sqrt(norm);
-        for (let i = 0; i < centroid.length; i += 1) {
-          centroid[i] *= invNorm;
-        }
-      }
-
-      let similaritySum = 0;
-      for (const vector of entry.vectors) {
-        similaritySum += dotProduct(vector, centroid);
-      }
-
-      const payload = {
-        vector: centroid.map((value) => round(value, 6)),
-        count: entry.vectors.length,
-        meanSimilarity: round(similaritySum / entry.vectors.length, 4),
-      };
+      const payload = rawPrototypes
+        .filter((prototype) => prototype.count > 0)
+        .sort((lhs, rhs) => rhs.count - lhs.count)
+        .map((prototype) => ({
+          vector: prototype.vector.map((value) => round(value, 6)),
+          count: prototype.count,
+          meanSimilarity: round(prototype.similaritySum / prototype.count, 4),
+        }));
 
       corpus[mode][entry.label] = payload;
-      centroids[mode].set(entry.label, centroid);
+      for (const prototype of payload) {
+        prototypes[mode].push({
+          label: entry.label,
+          vector: prototype.vector,
+        });
+      }
     }
   }
 
   let correct = 0;
   for (const sample of samples) {
-    const modeCentroids = centroids[sample.mode];
+    const modePrototypes = prototypes[sample.mode];
     let bestLabel = null;
     let bestSimilarity = -1;
-    for (const [label, centroid] of modeCentroids.entries()) {
-      const similarity = dotProduct(sample.vector, centroid);
+    for (const prototype of modePrototypes) {
+      const similarity = dotProduct(sample.vector, prototype.vector);
       if (similarity > bestSimilarity) {
         bestSimilarity = similarity;
-        bestLabel = label;
+        bestLabel = prototype.label;
       }
     }
     if (bestLabel === sample.label) {
@@ -668,95 +950,174 @@ function buildPrototypeCorpus(samples) {
   };
 }
 
-async function main() {
-  const manifest = await readJson(MANIFEST_PATH, null);
+async function loadCorrectionFixtures(manifestPath) {
+  const manifest = await readJson(manifestPath, null);
   if (!manifest || !Array.isArray(manifest.items) || manifest.items.length === 0) {
-    throw new Error(`No correction items found in ${MANIFEST_PATH}`);
+    throw new Error(`No correction items found in ${manifestPath}`);
   }
 
-  const existingTuning = await readJson(OUTPUT_TUNING, {
-    ios: { ...DEFAULT_PARSER_TUNING },
-    android: { ...DEFAULT_PARSER_TUNING },
-  });
-
-  const correctionsRoot = path.dirname(MANIFEST_PATH);
-  const boardSamples = { ios: [], android: [] };
-  const rackSamples = { ios: [], android: [] };
-  const glyphSamples = [];
-  const correctionWordCounts = new Map();
+  const correctionsRoot = path.dirname(manifestPath);
+  const fixtures = [];
+  let skipped = 0;
   let correctionLabelsUsed = 0;
 
-  let fixturesUsed = 0;
-  let fixturesSkipped = 0;
-
-  for (const item of manifest.items) {
-    if (!item?.labelFile) {
-      fixturesSkipped += 1;
+  for (let index = 0; index < manifest.items.length; index += 1) {
+    const item = manifest.items[index];
+    if (!item?.labelFile || !item?.imageFile) {
+      skipped += 1;
       continue;
     }
 
     const labelPath = path.resolve(correctionsRoot, item.labelFile);
-
-    let correction;
-    try {
-      correction = await readJson(labelPath, null);
-    } catch {
-      fixturesSkipped += 1;
+    const imagePath = path.resolve(correctionsRoot, item.imageFile);
+    const correction = await readJson(labelPath, null);
+    if (!correction || !Array.isArray(correction.board) || !Array.isArray(correction.rack)) {
+      skipped += 1;
       continue;
     }
 
-    if (correction && Array.isArray(correction.board) && Array.isArray(correction.rack)) {
-      correctionLabelsUsed += 1;
-      for (const word of collectBoardWords(correction.board)) {
-        const previous = correctionWordCounts.get(word) ?? 0;
-        correctionWordCounts.set(word, previous + 1);
+    correctionLabelsUsed += 1;
+    const profile = safeProfile(correction?.source?.profile ?? item?.profile);
+    const fixtureId = item?.sourceFilename
+      ? String(item.sourceFilename)
+      : `${profile}:${index}`;
+
+    fixtures.push({
+      id: fixtureId,
+      profile,
+      labelPath,
+      imagePath,
+      correction,
+      sourceFilename: item?.sourceFilename ?? path.basename(imagePath),
+      exportedAt: item?.exportedAt ?? null,
+    });
+  }
+
+  return {
+    manifest,
+    fixtures,
+    skipped,
+    correctionLabelsUsed,
+  };
+}
+
+function splitFixtures(fixtures, options = {}) {
+  const ratio = Math.max(0, Math.min(0.5, Number(options.validationRatio ?? DEFAULT_VALIDATION_RATIO)));
+  const seed = String(options.splitSeed ?? DEFAULT_SPLIT_SEED);
+  const grouped = {
+    ios: [],
+    android: [],
+  };
+
+  for (const fixture of fixtures) {
+    grouped[safeProfile(fixture.profile)].push(fixture);
+  }
+
+  const trainFixtures = [];
+  const validationFixtures = [];
+
+  for (const profile of PROFILE_IDS) {
+    const group = grouped[profile]
+      .slice()
+      .sort((lhs, rhs) => String(lhs.sourceFilename).localeCompare(String(rhs.sourceFilename)));
+    if (group.length === 0) {
+      continue;
+    }
+
+    if (ratio <= 0) {
+      trainFixtures.push(...group);
+      continue;
+    }
+
+    const scored = group
+      .map((fixture) => ({
+        fixture,
+        score: stableFraction(`${seed}|${profile}|${fixture.sourceFilename}`),
+      }))
+      .sort((lhs, rhs) => lhs.score - rhs.score);
+
+    let validationCount = Math.round(group.length * ratio);
+    if (group.length > 1) {
+      validationCount = Math.max(1, Math.min(group.length - 1, validationCount));
+    } else {
+      validationCount = 0;
+    }
+
+    for (let i = 0; i < scored.length; i += 1) {
+      if (i < validationCount) {
+        validationFixtures.push(scored[i].fixture);
+      } else {
+        trainFixtures.push(scored[i].fixture);
       }
     }
+  }
 
-    if (!item?.imageFile) {
-      fixturesSkipped += 1;
-      continue;
-    }
+  return {
+    ratio,
+    seed,
+    trainFixtures,
+    validationFixtures,
+    trainFixtureIds: new Set(trainFixtures.map((fixture) => fixture.id)),
+    validationFixtureIds: new Set(validationFixtures.map((fixture) => fixture.id)),
+  };
+}
 
-    const imagePath = path.resolve(correctionsRoot, item.imageFile);
+function createEmptySampleSet() {
+  return {
+    boardSamples: { ios: [], android: [] },
+    rackSamples: { ios: [], android: [] },
+    glyphSamples: [],
+    correctionWordCountsByFixture: new Map(),
+    fixturesUsed: 0,
+    fixturesSkipped: 0,
+  };
+}
+
+async function extractSamples(fixtures) {
+  const out = createEmptySampleSet();
+
+  for (const fixture of fixtures) {
     let image;
     try {
-      image = await readPngImage(imagePath);
+      image = await readPngImage(fixture.imagePath);
     } catch {
-      fixturesSkipped += 1;
+      out.fixturesSkipped += 1;
       continue;
     }
 
-    if (!correction || !Array.isArray(correction.board) || !Array.isArray(correction.rack)) {
-      fixturesSkipped += 1;
-      continue;
-    }
-
-    const profile = safeProfile(correction?.source?.profile ?? item?.profile);
-    const layout = LAYOUT_PROFILES[profile];
-
+    const layout = LAYOUT_PROFILES[safeProfile(fixture.profile)];
     const boardImage = cropNormalized(image, layout.boardRect);
     const rackImage = cropNormalized(image, layout.rackRect);
-    fixturesUsed += 1;
+    const fixtureWords = new Map();
+    for (const word of collectBoardWords(fixture.correction.board)) {
+      fixtureWords.set(word, (fixtureWords.get(word) ?? 0) + 1);
+    }
+    out.correctionWordCountsByFixture.set(fixture.id, fixtureWords);
+    out.fixturesUsed += 1;
 
     for (let row = 0; row < 15; row += 1) {
       for (let col = 0; col < 15; col += 1) {
         const rect = cellRect(boardImage.width, boardImage.height, row, col, 15, 15);
         const tileImage = cropImage(boardImage, rect);
-        const cell = correction.board?.[row]?.[col] ?? null;
+        const cell = fixture.correction.board?.[row]?.[col] ?? null;
         const letter = normalizeLetter(cell?.letter ?? '');
-        const occupied = Boolean(letter);
+        const isBlank = Boolean(cell?.isBlank);
+        const occupied = isBlank || Boolean(letter);
         const booster = cell?.premium !== null;
 
-        boardSamples[profile].push({
+        out.boardSamples[fixture.profile].push({
+          fixtureId: fixture.id,
+          profile: fixture.profile,
           blue: getBlueDominanceRatio(tileImage, BOARD_BLUE_OPTIONS),
           white: getWhiteInkRatio(tileImage, BOARD_WHITE_OPTIONS),
+          glyphWhite: getGlyphWhiteRatio(tileImage, BOARD_GLYPH_CROP),
           occupied,
           booster,
         });
 
-        if (occupied) {
-          glyphSamples.push({
+        if (occupied && letter) {
+          out.glyphSamples.push({
+            fixtureId: fixture.id,
             mode: 'board',
             label: letter,
             vector: extractGlyphVector(tileImage, BOARD_GLYPH_CROP),
@@ -768,20 +1129,24 @@ async function main() {
     for (let index = 0; index < 7; index += 1) {
       const rect = rackRect(rackImage.width, rackImage.height, index, 7);
       const tileImage = cropImage(rackImage, rect);
-      const rackTile = correction.rack?.[index] ?? null;
+      const rackTile = fixture.correction.rack?.[index] ?? null;
       const letter = normalizeLetter(rackTile?.letter ?? '');
       const isBlank = Boolean(rackTile?.isBlank);
       const occupied = isBlank || Boolean(letter);
 
-      rackSamples[profile].push({
+      out.rackSamples[fixture.profile].push({
+        fixtureId: fixture.id,
+        profile: fixture.profile,
         blue: getBlueDominanceRatio(tileImage, RACK_BLUE_OPTIONS),
         white: getWhiteInkRatio(tileImage, RACK_WHITE_OPTIONS),
+        glyphWhite: getGlyphWhiteRatio(tileImage, RACK_GLYPH_CROP),
         occupied,
         isBlank,
       });
 
       if (occupied) {
-        glyphSamples.push({
+        out.glyphSamples.push({
+          fixtureId: fixture.id,
           mode: 'rack',
           label: isBlank ? '?' : letter,
           vector: extractGlyphVector(tileImage, RACK_GLYPH_CROP),
@@ -790,6 +1155,52 @@ async function main() {
     }
   }
 
+  return out;
+}
+
+function pickSamplesByFixtureIds(samples, fixtureIds) {
+  const board = { ios: [], android: [] };
+  const rack = { ios: [], android: [] };
+  for (const profile of PROFILE_IDS) {
+    board[profile] = samples.boardSamples[profile].filter((sample) => fixtureIds.has(sample.fixtureId));
+    rack[profile] = samples.rackSamples[profile].filter((sample) => fixtureIds.has(sample.fixtureId));
+  }
+  const glyph = samples.glyphSamples.filter((sample) => fixtureIds.has(sample.fixtureId));
+  return { board, rack, glyph };
+}
+
+function aggregateWordCountsByFixture(wordCountsByFixture, fixtureIds) {
+  const counts = new Map();
+  for (const fixtureId of fixtureIds) {
+    const words = wordCountsByFixture.get(fixtureId);
+    if (!words) {
+      continue;
+    }
+    for (const [word, count] of words.entries()) {
+      counts.set(word, (counts.get(word) ?? 0) + count);
+    }
+  }
+  return counts;
+}
+
+function toSortedWordStats(wordCounts, sourceCount) {
+  const sortedEntries = [...wordCounts.entries()].sort((lhs, rhs) => {
+    if (rhs[1] !== lhs[1]) {
+      return rhs[1] - lhs[1];
+    }
+    return lhs[0].localeCompare(rhs[0]);
+  });
+
+  return {
+    version: '1',
+    generatedAt: new Date().toISOString(),
+    sourceCount,
+    uniqueWords: wordCounts.size,
+    words: Object.fromEntries(sortedEntries),
+  };
+}
+
+function fitModels(trainSamples, existingTuning, trainFixtureCount, correctionWordCounts, correctionLabelsUsed) {
   const nextTuning = {
     ios: {
       ...DEFAULT_PARSER_TUNING,
@@ -801,25 +1212,15 @@ async function main() {
     },
   };
 
-  const report = {
-    manifestPath: MANIFEST_PATH,
-    generatedAt: new Date().toISOString(),
-    fixturesUsed,
-    fixturesSkipped,
-    correctionLabelsUsed,
-    correctionWordCount: correctionWordCounts.size,
-    profiles: {},
-    prototypes: null,
-  };
-
+  const profileReport = {};
   for (const profile of PROFILE_IDS) {
-    const board = boardSamples[profile];
-    const rack = rackSamples[profile];
+    const board = trainSamples.board[profile];
+    const rack = trainSamples.rack[profile];
 
     if (board.length === 0 || rack.length === 0) {
-      report.profiles[profile] = {
+      profileReport[profile] = {
         skipped: true,
-        reason: 'No fixtures for profile',
+        reason: 'No train fixtures for profile',
       };
       continue;
     }
@@ -838,7 +1239,7 @@ async function main() {
       nextTuning[profile].rackWhiteInkRatioMin = DEFAULT_PARSER_TUNING.rackWhiteInkRatioMin;
     }
 
-    report.profiles[profile] = {
+    profileReport[profile] = {
       boardSamples: board.length,
       rackSamples: rack.length,
       board: {
@@ -883,44 +1284,259 @@ async function main() {
     };
   }
 
-  const prototypeOutput = buildPrototypeCorpus(glyphSamples);
-  prototypeOutput.corpus.sourceCount = fixturesUsed;
+  const prototypeOutput = buildPrototypeCorpus(trainSamples.glyph);
+  prototypeOutput.corpus.sourceCount = trainFixtureCount;
 
-  report.prototypes = {
-    sampleCount: glyphSamples.length,
+  const boardOccupancyAll = [...trainSamples.board.ios, ...trainSamples.board.android];
+  const boardRegular = boardOccupancyAll.filter((sample) => !sample.booster);
+  const boardBooster = boardOccupancyAll.filter((sample) => sample.booster);
+  const rackOccupancyAll = [...trainSamples.rack.ios, ...trainSamples.rack.android];
+
+  const boardRegularModel = buildOccupancyClassifier(boardRegular);
+  const boardBoosterModel = buildOccupancyClassifier(boardBooster);
+  const rackModel = buildOccupancyClassifier(rackOccupancyAll);
+
+  const occupancyClassifier = {
+    version: '1',
+    trainedAt: new Date().toISOString(),
+    sourceCount: trainFixtureCount,
+    board: {
+      regular: boardRegularModel?.model ?? null,
+      booster: boardBoosterModel?.model ?? null,
+    },
+    rack: {
+      default: rackModel?.model ?? null,
+    },
+    crops: {
+      boardGlyphCrop: BOARD_GLYPH_CROP,
+      rackGlyphCrop: RACK_GLYPH_CROP,
+    },
+  };
+
+  const reportPrototypes = {
+    sampleCount: trainSamples.glyph.length,
     trainAccuracy: round(prototypeOutput.trainAccuracy, 4),
     boardLabels: Object.keys(prototypeOutput.corpus.board).length,
     rackLabels: Object.keys(prototypeOutput.corpus.rack).length,
   };
 
-  const sortedCorrectionWords = Object.entries(
-    Object.fromEntries(correctionWordCounts.entries()),
-  ).sort((a, b) => {
-    if (b[1] !== a[1]) {
-      return b[1] - a[1];
-    }
-    return a[0].localeCompare(b[0]);
-  });
-
-  const correctionWordStats = {
-    version: '1',
-    generatedAt: new Date().toISOString(),
-    sourceCount: correctionLabelsUsed,
-    uniqueWords: correctionWordCounts.size,
-    words: Object.fromEntries(sortedCorrectionWords),
+  const reportOccupancyClassifier = {
+    boardRegular: boardRegularModel
+      ? {
+          metrics: boardRegularModel.metrics,
+          probabilitySummary: boardRegularModel.probabilitySummary,
+        }
+      : { skipped: true },
+    boardBooster: boardBoosterModel
+      ? {
+          metrics: boardBoosterModel.metrics,
+          probabilitySummary: boardBoosterModel.probabilitySummary,
+        }
+      : { skipped: true },
+    rack: rackModel
+      ? {
+          metrics: rackModel.metrics,
+          probabilitySummary: rackModel.probabilitySummary,
+        }
+      : { skipped: true },
   };
 
-  await writeFile(OUTPUT_TUNING, `${JSON.stringify(nextTuning, null, 2)}\n`, 'utf8');
-  await writeFile(OUTPUT_PROTOTYPES, `${JSON.stringify(prototypeOutput.corpus, null, 2)}\n`, 'utf8');
-  await writeFile(OUTPUT_WORD_STATS, `${JSON.stringify(correctionWordStats, null, 2)}\n`, 'utf8');
+  const correctionWordStats = toSortedWordStats(correctionWordCounts, correctionLabelsUsed);
+
+  return {
+    nextTuning,
+    profileReport,
+    prototypeOutput,
+    occupancyClassifier,
+    reportPrototypes,
+    reportOccupancyClassifier,
+    correctionWordStats,
+  };
+}
+
+function classifyPrototypeLabel(vector, corpus, mode) {
+  const entries = corpus[mode] ?? {};
+  let bestLabel = null;
+  let bestSimilarity = -1;
+  for (const [label, raw] of Object.entries(entries)) {
+    const variants = Array.isArray(raw) ? raw : [raw];
+    for (const variant of variants) {
+      if (!variant || !Array.isArray(variant.vector)) {
+        continue;
+      }
+      const similarity = dotProduct(vector, variant.vector);
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity;
+        bestLabel = label;
+      }
+    }
+  }
+  return bestLabel;
+}
+
+function evaluateValidationMetrics(validationSamples, fitted) {
+  const boardValidation = [...validationSamples.board.ios, ...validationSamples.board.android];
+  const rackValidation = [...validationSamples.rack.ios, ...validationSamples.rack.android];
+  const hasValidation = boardValidation.length > 0 || rackValidation.length > 0 || validationSamples.glyph.length > 0;
+  if (!hasValidation) {
+    return {
+      skipped: true,
+      reason: 'No validation fixtures selected',
+    };
+  }
+
+  let boardTp = 0;
+  let boardFp = 0;
+  let boardFn = 0;
+  let boardTn = 0;
+
+  for (const sample of boardValidation) {
+    const tuning = fitted.nextTuning[sample.profile];
+    const blueMin = sample.booster ? tuning.boardBlueTileRatioMinOnBooster : tuning.boardBlueTileRatioMin;
+    const whiteMin = sample.booster ? tuning.boardWhiteInkRatioMin + 0.012 : tuning.boardWhiteInkRatioMin;
+    const localLikely = sample.blue >= blueMin && sample.white >= whiteMin;
+
+    let predicted = localLikely;
+    if (!predicted && !sample.booster) {
+      const model = fitted.occupancyClassifier.board.regular;
+      if (model) {
+        const probability = classifyOccupancyProbability(
+          [sample.blue, sample.white, sample.glyphWhite],
+          model,
+        );
+        predicted = probability >= clamp01(model.threshold + 0.02);
+      }
+    }
+
+    if (predicted && sample.occupied) {
+      boardTp += 1;
+    } else if (predicted && !sample.occupied) {
+      boardFp += 1;
+    } else if (!predicted && sample.occupied) {
+      boardFn += 1;
+    } else {
+      boardTn += 1;
+    }
+  }
+
+  const boardOccupancy = computeMetrics(boardTp, boardFp, boardFn, boardTn);
+
+  const boardGlyphValidation = validationSamples.glyph.filter((sample) => sample.mode === 'board');
+  let boardLetterCorrect = 0;
+  for (const sample of boardGlyphValidation) {
+    const predicted = classifyPrototypeLabel(sample.vector, fitted.prototypeOutput.corpus, 'board');
+    if (predicted === sample.label) {
+      boardLetterCorrect += 1;
+    }
+  }
+
+  const rackGlyphValidation = validationSamples.glyph.filter((sample) => sample.mode === 'rack');
+  let rackCorrect = 0;
+  for (const sample of rackGlyphValidation) {
+    const predicted = classifyPrototypeLabel(sample.vector, fitted.prototypeOutput.corpus, 'rack');
+    if (predicted === sample.label) {
+      rackCorrect += 1;
+    }
+  }
+
+  return {
+    skipped: false,
+    boardOccupancy: {
+      precision: round(boardOccupancy.precision, 4),
+      recall: round(boardOccupancy.recall, 4),
+      f1: round(boardOccupancy.f1, 4),
+      fpRate: round(boardOccupancy.fpRate, 4),
+      tp: boardTp,
+      fp: boardFp,
+      fn: boardFn,
+      tn: boardTn,
+      sampleCount: boardValidation.length,
+    },
+    boardLetter: {
+      correct: boardLetterCorrect,
+      total: boardGlyphValidation.length,
+      accuracy: boardGlyphValidation.length > 0 ? round(boardLetterCorrect / boardGlyphValidation.length, 4) : 0,
+    },
+    rackAccuracy: {
+      correct: rackCorrect,
+      total: rackGlyphValidation.length,
+      accuracy: rackGlyphValidation.length > 0 ? round(rackCorrect / rackGlyphValidation.length, 4) : 0,
+    },
+  };
+}
+
+async function main() {
+  const cli = parseCliOptions(process.argv.slice(2));
+  const fixtureLoad = await loadCorrectionFixtures(cli.manifestPath);
+  const split = splitFixtures(fixtureLoad.fixtures, {
+    validationRatio: cli.validationRatio,
+    splitSeed: cli.splitSeed,
+  });
+  const samples = await extractSamples(fixtureLoad.fixtures);
+
+  const existingTuning = await readJson(OUTPUT_TUNING, {
+    ios: { ...DEFAULT_PARSER_TUNING },
+    android: { ...DEFAULT_PARSER_TUNING },
+  });
+
+  const trainSamples = pickSamplesByFixtureIds(samples, split.trainFixtureIds);
+  const validationSamples = pickSamplesByFixtureIds(samples, split.validationFixtureIds);
+  const trainWordCounts = aggregateWordCountsByFixture(
+    samples.correctionWordCountsByFixture,
+    split.trainFixtureIds,
+  );
+
+  const fitted = fitModels(
+    trainSamples,
+    existingTuning,
+    split.trainFixtures.length,
+    trainWordCounts,
+    split.trainFixtures.length,
+  );
+  const validationMetrics = evaluateValidationMetrics(validationSamples, fitted);
+
+  const report = {
+    manifestPath: cli.manifestPath,
+    generatedAt: new Date().toISOString(),
+    fixturesUsed: samples.fixturesUsed,
+    fixturesSkipped: fixtureLoad.skipped + samples.fixturesSkipped,
+    correctionLabelsUsed: fixtureLoad.correctionLabelsUsed,
+    correctionWordCount: fitted.correctionWordStats.uniqueWords,
+    split: {
+      ratio: round(split.ratio, 4),
+      seed: split.seed,
+      trainFixtureCount: split.trainFixtures.length,
+      validationFixtureCount: split.validationFixtures.length,
+    },
+    validationMetrics,
+    profiles: fitted.profileReport,
+    prototypes: fitted.reportPrototypes,
+    occupancyClassifier: fitted.reportOccupancyClassifier,
+  };
+
+  await writeFile(OUTPUT_TUNING, `${JSON.stringify(fitted.nextTuning, null, 2)}\n`, 'utf8');
+  await writeFile(OUTPUT_PROTOTYPES, `${JSON.stringify(fitted.prototypeOutput.corpus, null, 2)}\n`, 'utf8');
+  await writeFile(OUTPUT_TILE_CLASSIFIER, `${JSON.stringify(fitted.occupancyClassifier, null, 2)}\n`, 'utf8');
+  await writeFile(OUTPUT_WORD_STATS, `${JSON.stringify(fitted.correctionWordStats, null, 2)}\n`, 'utf8');
   await writeFile(OUTPUT_REPORT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
-  console.log(`Tuned parser thresholds from ${fixturesUsed} fixtures (${fixturesSkipped} skipped).`);
+  console.log(
+    `Tuned parser from ${samples.fixturesUsed} extracted fixtures (${fixtureLoad.skipped + samples.fixturesSkipped} skipped).`,
+  );
+  console.log(
+    `Split: train=${split.trainFixtures.length}, validation=${split.validationFixtures.length}, ratio=${round(split.ratio, 4)}, seed=${split.seed}`,
+  );
   console.log(`Wrote ${OUTPUT_TUNING}`);
   console.log(`Wrote ${OUTPUT_PROTOTYPES}`);
+  console.log(`Wrote ${OUTPUT_TILE_CLASSIFIER}`);
   console.log(`Wrote ${OUTPUT_WORD_STATS}`);
   console.log(`Wrote ${OUTPUT_REPORT}`);
-  console.log(`Prototype train accuracy: ${round(prototypeOutput.trainAccuracy, 4)}`);
+  console.log(`Prototype train accuracy: ${round(fitted.prototypeOutput.trainAccuracy, 4)}`);
+  if (!validationMetrics.skipped) {
+    console.log(
+      `Validation: board occupancy f1=${validationMetrics.boardOccupancy.f1}, board letter=${validationMetrics.boardLetter.accuracy}, rack=${validationMetrics.rackAccuracy.accuracy}`,
+    );
+  }
 }
 
 main().catch((error) => {

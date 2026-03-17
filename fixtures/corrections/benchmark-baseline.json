@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "generatedAt": "2026-03-14T23:05:20.225Z",
+  "manifestPath": "/Users/jaspersands/Desktop/vibes/crossplayai/fixtures/corrections/manifest.json",
+  "fixtureCount": 30,
+  "targets": {
+    "boardOccupancyPrecisionMicro": 0.6145,
+    "boardOccupancyRecallMicro": 0.5944,
+    "boardLetterAccuracyMicro": 0.181,
+    "rackAccuracyMicro": 0.7333
+  }
+}
