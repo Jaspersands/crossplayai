@@ -99,6 +99,7 @@ export type ParserWorkerRequest = {
   payload: {
     file: File;
     hint?: ProfileType;
+    openaiApiKey?: string;
   };
 };
 

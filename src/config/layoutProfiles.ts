@@ -18,9 +18,9 @@ export const LAYOUT_PROFILES: Record<ProfileType, LayoutProfile> = {
   ios: {
     boardRect: {
       x: 0.01,
-      y: 0.29,
+      y: 0.2971,
       width: 0.98,
-      height: 0.47,
+      height: 0.4417,
     },
     rackRect: {
       x: 0.0,
@@ -34,9 +34,9 @@ export const LAYOUT_PROFILES: Record<ProfileType, LayoutProfile> = {
   android: {
     boardRect: {
       x: 0.01,
-      y: 0.29,
+      y: 0.2971,
       width: 0.98,
-      height: 0.47,
+      height: 0.4417,
     },
     rackRect: {
       x: 0.0,

@@ -27,14 +27,18 @@ export function cellRect(
   col: number,
   rows: number,
   cols: number,
+  /** Fraction of the cell to trim from each edge (0 = full cell, 0.15 = inner 70%). */
+  insetFraction = 0,
 ): { x: number; y: number; width: number; height: number } {
   const cellWidth = totalWidth / cols;
   const cellHeight = totalHeight / rows;
+  const insetX = cellWidth * insetFraction;
+  const insetY = cellHeight * insetFraction;
   return {
-    x: Math.floor(col * cellWidth),
-    y: Math.floor(row * cellHeight),
-    width: Math.ceil(cellWidth),
-    height: Math.ceil(cellHeight),
+    x: Math.floor(col * cellWidth + insetX),
+    y: Math.floor(row * cellHeight + insetY),
+    width: Math.max(1, Math.ceil(cellWidth - 2 * insetX)),
+    height: Math.max(1, Math.ceil(cellHeight - 2 * insetY)),
   };
 }
 

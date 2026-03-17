@@ -11,7 +11,7 @@ self.onmessage = async (event: MessageEvent<ParserWorkerRequest>) => {
   }
 
   try {
-    const parsed = await parseScreenshot(message.payload.file, message.payload.hint);
+    const parsed = await parseScreenshot(message.payload.file, message.payload.hint, message.payload.openaiApiKey);
     const response: ParserWorkerResponse = {
       id: message.id,
       type: 'parseResult',

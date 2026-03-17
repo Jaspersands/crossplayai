@@ -101,6 +101,274 @@ let parserLexiconPromise: Promise<Set<string>> | null = null;
 let letterWorkerInitialized = false;
 let scoreWorkerInitialized = false;
 
+const VISION_MODEL = 'gpt-4.1-mini';
+
+type VisionBoardResult = {
+  board: Board;
+  rack: RackTile[];
+};
+
+async function canvasToBase64Jpeg(canvas: OffscreenCanvas): Promise<string> {
+  const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 });
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+/**
+ * Detect which cells have tiles using blue-ratio analysis.
+ * Returns a 15x15 boolean grid (true = cell has a tile).
+ */
+function detectOccupiedCells(
+  boardCanvas: OffscreenCanvas,
+): boolean[][] {
+  const TILE_THRESHOLD = 0.35;
+  /** Inset 15% from each edge so adjacent-tile pixels don't bleed in. */
+  const DETECT_INSET = 0.15;
+  const ctx = boardCanvas.getContext('2d')!;
+  const fullImageData = ctx.getImageData(0, 0, boardCanvas.width, boardCanvas.height);
+
+  const grid: boolean[][] = [];
+  for (let r = 0; r < 15; r += 1) {
+    const row: boolean[] = [];
+    for (let c = 0; c < 15; c += 1) {
+      const rect = cellRect(boardCanvas.width, boardCanvas.height, r, c, 15, 15, DETECT_INSET);
+      const cellData = cropImageData(fullImageData, rect);
+      // insetRatio=0 because cellRect already handles the inset
+      const blueRatio = getBlueDominanceRatio(cellData, { insetRatio: 0 });
+      row.push(blueRatio >= TILE_THRESHOLD);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+
+type TileRowData = {
+  row: number;
+  cols: number[];
+};
+
+/**
+ * Build a composite image with individual tile crops arranged in rows.
+ * Each row shows cropped tiles from that row laid out left-to-right with gaps.
+ * Row labels are on the left.
+ */
+function buildTileCropComposite(
+  boardCanvas: OffscreenCanvas,
+  occupied: boolean[][],
+): { composite: OffscreenCanvas; tileRows: TileRowData[] } {
+  const w = boardCanvas.width;
+  const h = boardCanvas.height;
+  const cellW = w / 15;
+  const cellH = h / 15;
+
+  // Build per-row data
+  const tileRows: TileRowData[] = [];
+  for (let r = 0; r < 15; r += 1) {
+    const cols: number[] = [];
+    for (let c = 0; c < 15; c += 1) {
+      if (occupied[r][c]) cols.push(c);
+    }
+    if (cols.length > 0) {
+      tileRows.push({ row: r, cols });
+    }
+  }
+
+  if (tileRows.length === 0) {
+    return { composite: new OffscreenCanvas(1, 1), tileRows };
+  }
+
+  const tileSize = Math.floor(cellH * 2); // 2x upscale for sharper letter/point-value readability
+  const gap = 4;
+  const labelW = 28;
+  const rowH = tileSize + gap;
+  const maxTiles = Math.max(...tileRows.map((tr) => tr.cols.length));
+  const totalW = labelW + maxTiles * (tileSize + gap) + gap;
+  const totalH = tileRows.length * rowH + gap;
+
+  const composite = new OffscreenCanvas(totalW, totalH);
+  const ctx = composite.getContext('2d')!;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, totalW, totalH);
+
+  const fontSize = Math.max(10, Math.min(16, Math.floor(tileSize * 0.35)));
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  for (let i = 0; i < tileRows.length; i += 1) {
+    const { row, cols } = tileRows[i];
+    const y = gap + i * rowH;
+
+    // Row label
+    ctx.fillStyle = '#000000';
+    ctx.fillText(`${row}`, labelW / 2, y + tileSize / 2);
+
+    // Crop inset: 8% keeps letter features (Q tail, I serifs) while avoiding neighbor bleed
+    const CROP_INSET = 0.08;
+    for (let j = 0; j < cols.length; j += 1) {
+      const c = cols[j];
+      const inX = cellW * CROP_INSET;
+      const inY = cellH * CROP_INSET;
+      const sx = Math.floor(c * cellW + inX);
+      const sy = Math.floor(row * cellH + inY);
+      const sw = Math.max(1, Math.ceil(cellW - 2 * inX));
+      const sh = Math.max(1, Math.ceil(cellH - 2 * inY));
+      const px = labelW + gap + j * (tileSize + gap);
+
+      ctx.drawImage(boardCanvas, sx, sy, sw, sh, px, y, tileSize, tileSize);
+    }
+  }
+
+  return { composite, tileRows };
+}
+
+async function parseWithVisionApi(
+  canvas: OffscreenCanvas,
+  apiKey: string,
+  profile: LayoutProfile,
+): Promise<VisionBoardResult> {
+  const boardCanvas = cropCanvas(canvas, profile.boardRect);
+  const rackCanvas = cropCanvas(canvas, profile.rackRect);
+
+  // Detect which cells have tiles
+  const occupied = detectOccupiedCells(boardCanvas);
+
+  // Build composite with individual tile crops arranged in rows
+  const { composite, tileRows } = buildTileCropComposite(boardCanvas, occupied);
+
+  const rowDescriptions = tileRows
+    .map((tr) => `Row ${tr.row}: ${tr.cols.length} tile(s)`)
+    .join('\n');
+
+  const [compositeBase64, rackBase64] = await Promise.all([
+    canvasToBase64Jpeg(composite),
+    canvasToBase64Jpeg(rackCanvas),
+  ]);
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: VISION_MODEL,
+      max_tokens: 2048,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${compositeBase64}`, detail: 'high' },
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${rackBase64}` },
+            },
+            {
+              type: 'text',
+              text: `Image 1: Cropped Scrabble tiles arranged in rows. Each row is labeled with its row number on the left. The tiles within each row are shown from left to right, separated by small gaps. Each tile is a blue square with a LARGE white letter and a small point-value number in the top-right corner.
+
+IMPORTANT: Some tiles may appear mostly blue with NO clear letter — these are false detections (blue bleed from adjacent tiles). For those, output "." in the array instead of a letter.
+
+Use the small point-value number to distinguish similar-looking letters:
+- Q (10 pts) vs O (1 pt): Q has "10" in corner, O has "1"
+- I (1 pt) vs L (1 pt): I is a single vertical stroke, L has a horizontal foot at the bottom
+- I vs J: J has a curved bottom/hook
+- B vs D: B has two bumps on right, D has one curve
+
+Image 2: The tile rack (up to 7 tiles, left to right).
+
+${rowDescriptions}
+
+Output ONLY valid JSON (no markdown fences):
+{"rows":{"7":["F","A","D","E","D"],"8":["A"]},"rack":["X","Y","Z"]}
+
+The "rows" object maps row number (as string) to an array with one entry per tile shown. Use UPPERCASE for letters, lowercase for blank tiles (no point number visible), and "." for blue cells with no visible letter.
+The "rack" array has letters from Image 2, left to right.`,
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`OpenAI API error ${response.status}: ${errorText.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const content: string = data?.choices?.[0]?.message?.content ?? '';
+
+  // Strip markdown fences if present
+  const jsonStr = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  // Find JSON object in response
+  const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('Vision API returned no JSON');
+  }
+
+  let parsed: { rows?: Record<string, string[]>; rack?: unknown };
+  try {
+    parsed = JSON.parse(jsonMatch[0]);
+  } catch {
+    throw new Error('Vision API returned invalid JSON');
+  }
+
+  // Build board by mapping row letters to known occupied columns
+  // Skip "." entries (model-identified false positives)
+  const board = createEmptyBoard();
+  const rowsData = parsed.rows ?? {};
+  for (const tr of tileRows) {
+    const rowLetters = rowsData[String(tr.row)];
+    if (!Array.isArray(rowLetters)) continue;
+
+    let colIdx = 0;
+    let letterIdx = 0;
+    while (letterIdx < rowLetters.length && colIdx < tr.cols.length) {
+      const letter = rowLetters[letterIdx];
+      if (letter === '.') {
+        // Model says this cell is a false positive — skip it
+        colIdx += 1;
+        letterIdx += 1;
+      } else if (typeof letter === 'string' && letter.length === 1 && /[a-zA-Z]/.test(letter)) {
+        const isBlank = letter === letter.toLowerCase();
+        board[tr.row][tr.cols[colIdx]] = { letter: letter.toUpperCase(), isBlank };
+        colIdx += 1;
+        letterIdx += 1;
+      } else {
+        letterIdx += 1;
+      }
+    }
+  }
+
+  // Validate and convert rack
+  const rackData = Array.isArray(parsed.rack) ? parsed.rack : [];
+  const rack: RackTile[] = [];
+  for (let i = 0; i < Math.min(7, rackData.length); i += 1) {
+    const tile = rackData[i];
+    if (typeof tile === 'string' && tile.length === 1 && /[a-zA-Z]/.test(tile)) {
+      const isBlank = tile === tile.toLowerCase();
+      rack.push({ letter: tile.toUpperCase(), isBlank });
+    } else {
+      rack.push({ letter: '', isBlank: false });
+    }
+  }
+  while (rack.length < 7) {
+    rack.push({ letter: '', isBlank: false });
+  }
+
+  return { board, rack };
+}
+
 async function getOcrWorker(): Promise<TesseractWorker> {
   if (!ocrWorkerPromise) {
     ocrWorkerPromise = createWorker('eng');
@@ -1432,10 +1700,32 @@ function cropRegions(canvas: OffscreenCanvas, profile: LayoutProfile): {
   };
 }
 
-export async function parseScreenshot(file: File, hint?: ProfileType): Promise<ParsedState> {
+export async function parseScreenshot(file: File, hint?: ProfileType, openaiApiKey?: string): Promise<ParsedState> {
   const canvas = await canvasFromFile(file);
   const profileType = detectProfile(canvas.width, canvas.height, hint);
   const profile = LAYOUT_PROFILES[profileType];
+
+  // Try OpenAI Vision API first if an API key is available
+  const apiKey = openaiApiKey ?? null;
+  if (apiKey) {
+    try {
+      const visionResult = await parseWithVisionApi(canvas, apiKey, profile);
+      return {
+        profile: profileType,
+        board: visionResult.board,
+        rack: visionResult.rack,
+        confidence: 0.95,
+        lowConfidenceCells: [],
+      };
+    } catch (error) {
+      console.warn(
+        'Vision API failed, falling back to Tesseract:',
+        error instanceof Error ? error.message : error,
+      );
+    }
+  }
+
+  // Fallback: existing Tesseract OCR pipeline
   const thresholds = profileThresholds[profileType] as ProfileThresholds;
   const tuning = getParserTuning(profileType);
 

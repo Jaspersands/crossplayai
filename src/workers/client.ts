@@ -85,6 +85,7 @@ export function parseWithWorker(file: File, hint?: ProfileType): Promise<ParsedS
       payload: {
         file,
         hint,
+        openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY as string | undefined,
       },
     };
 
