@@ -162,7 +162,7 @@ export function evaluatePlacement(
   }
 
   const usedRackTiles = placedTiles.length;
-  const bingoBonus = usedRackTiles === 7 ? 50 : 0;
+  const bingoBonus = usedRackTiles === 7 ? 40 : 0;
   const score = mainWordScore * mainWordMultiplier + crossWordScore + bingoBonus;
 
   return {

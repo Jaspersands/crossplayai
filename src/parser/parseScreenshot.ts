@@ -6,6 +6,7 @@ import correctionWordStatsRaw from '../data/correctionWordStats.json';
 import { LETTER_SCORES, PREMIUM_BOARD } from '../constants/board';
 import type { Board, ParsedState, ProfileType, RackTile } from '../types/game';
 import { createEmptyBoard, normalizeLetter } from '../lib/boardUtils';
+import { resolveOpenAiApiKey } from '../lib/openaiKey';
 import { classifyPrototypeLetter, type PrototypeMode } from '../lib/prototypeClassifier';
 import { cellRect, cropCanvas, cropImageData, getBlueDominanceRatio, imageDataToBlob } from './imageUtils';
 import { loadOpenCv } from './opencv';
@@ -1706,7 +1707,7 @@ export async function parseScreenshot(file: File, hint?: ProfileType, openaiApiK
   const profile = LAYOUT_PROFILES[profileType];
 
   // Try OpenAI Vision API first if an API key is available
-  const apiKey = openaiApiKey ?? null;
+  const apiKey = resolveOpenAiApiKey(openaiApiKey);
   if (apiKey) {
     try {
       const visionResult = await parseWithVisionApi(canvas, apiKey, profile);
