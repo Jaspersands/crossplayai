@@ -28,12 +28,6 @@ export type ParsedState = {
 
 export type Direction = 'across' | 'down';
 
-export type MoveRisk = {
-  label: 'low' | 'medium' | 'high';
-  score: number;
-  reasons: string[];
-};
-
 export type MoveCandidate = {
   word: string;
   row: number;
@@ -41,10 +35,6 @@ export type MoveCandidate = {
   direction: Direction;
   score: number;
   leaveValue: number;
-  defensePenalty: number;
-  lookaheadPenalty: number;
-  opponentReplyScore: number;
-  risk: MoveRisk;
   totalEval: number;
 };
 
@@ -66,12 +56,6 @@ export type DictionaryMeta = {
   loadedFromCache: boolean;
   source: string;
 };
-
-export type RiskContext = {
-  blocklist: Set<string>;
-};
-
-export type RiskAssessment = MoveRisk;
 
 export type SolveWorkerRequest = {
   id: string;

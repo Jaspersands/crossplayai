@@ -3,13 +3,10 @@ import type {
   DictionarySource,
   ParsedState,
   ProfileType,
-  RiskAssessment,
-  RiskContext,
   SolveInput,
   MoveCandidate,
 } from '../types/game';
 import { loadDictionary as loadDictionaryImpl } from './dictionary';
-import { assessWordRisk as assessWordRiskImpl } from './risk';
 import { solveMoves as solveMovesImpl } from './solver';
 import { parseScreenshot as parseScreenshotImpl } from '../parser/parseScreenshot';
 
@@ -23,8 +20,4 @@ export function solveMoves(input: SolveInput): MoveCandidate[] {
 
 export async function loadDictionary(source?: DictionarySource): Promise<DictionaryMeta> {
   return loadDictionaryImpl(source);
-}
-
-export function assessWordRisk(word: string, context: RiskContext): RiskAssessment {
-  return assessWordRiskImpl(word, context);
 }

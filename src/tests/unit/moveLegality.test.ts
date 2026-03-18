@@ -21,7 +21,6 @@ describe('move legality', () => {
         topN: 10,
       },
       lexicon,
-      new Set(),
     );
 
     expect(moves.length).toBeGreaterThan(0);

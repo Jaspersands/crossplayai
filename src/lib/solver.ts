@@ -1,16 +1,10 @@
 import {
   ALPHABET,
-  LOOKAHEAD_RACK_SAMPLES,
-  LOOKAHEAD_REPLY_WEIGHT,
-  LOOKAHEAD_TOP_K,
   MAX_RACK_SIZE,
 } from '../config/solver';
-import { TILE_DISTRIBUTION } from '../constants/board';
 import { evaluateLeaveValue } from './leave';
 import type { Board, Direction, MoveCandidate, RackTile, SolveInput } from '../types/game';
 import { getLexiconById } from './dictionary';
-import { evaluateDefensePenalty } from './defense';
-import { assessWordRisk } from './risk';
 import {
   buildPerpendicularWordString,
   evaluatePlacement,
@@ -49,8 +43,6 @@ type SolverMode = 'full' | 'scoreOnly';
 type SolverContext = {
   mode: SolverMode;
   lexicon: SolverLexicon;
-  blocklist: Set<string>;
-  applyLookahead: boolean;
 };
 
 type CandidateContext = {
@@ -58,12 +50,6 @@ type CandidateContext = {
   spec: MoveSpec;
   blankIndices: Set<number>;
   rackUsage: RackUsage;
-};
-
-const SCORE_ONLY_RISK: MoveCandidate['risk'] = {
-  label: 'low',
-  score: 0,
-  reasons: ['Score-only opponent evaluation.'],
 };
 
 function round(value: number): number {
@@ -401,134 +387,6 @@ function buildAnchors(board: Board): Array<{ row: number; col: number }> {
   );
 }
 
-function applyMoveToBoard(board: Board, move: MoveSpec, blankPositions: Set<number>): Board {
-  const nextBoard = board.map((row) => row.map((cell) => ({ ...cell })));
-  const dr = move.direction === 'across' ? 0 : 1;
-  const dc = move.direction === 'across' ? 1 : 0;
-
-  for (let i = 0; i < move.word.length; i += 1) {
-    const row = move.row + dr * i;
-    const col = move.col + dc * i;
-
-    if (nextBoard[row][col].letter) {
-      continue;
-    }
-
-    nextBoard[row][col] = {
-      letter: move.word[i],
-      isBlank: blankPositions.has(i),
-    };
-  }
-
-  return nextBoard;
-}
-
-type TileBag = Map<string, number>;
-
-function createTileBag(): TileBag {
-  const bag = new Map<string, number>();
-  for (const [tile, count] of Object.entries(TILE_DISTRIBUTION)) {
-    bag.set(tile, count);
-  }
-  return bag;
-}
-
-function removeFromBag(bag: TileBag, tile: string, count = 1): void {
-  const current = bag.get(tile) ?? 0;
-  if (current <= 0) {
-    return;
-  }
-  bag.set(tile, Math.max(0, current - count));
-}
-
-function bagTileCount(bag: TileBag): number {
-  let total = 0;
-  for (const count of bag.values()) {
-    total += count;
-  }
-  return total;
-}
-
-function subtractBoardTilesFromBag(bag: TileBag, board: Board): void {
-  for (const row of board) {
-    for (const cell of row) {
-      if (!cell.letter) {
-        continue;
-      }
-      removeFromBag(bag, cell.isBlank ? '?' : cell.letter, 1);
-    }
-  }
-}
-
-function subtractInventoryFromBag(bag: TileBag, inventory: RackInventory): void {
-  for (const [letter, count] of inventory.counts.entries()) {
-    removeFromBag(bag, letter, count);
-  }
-  if (inventory.blanks > 0) {
-    removeFromBag(bag, '?', inventory.blanks);
-  }
-}
-
-function hashString(input: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function seededRandom(seed: number): () => number {
-  let state = (seed >>> 0) || 1;
-  return () => {
-    state = Math.imul(state, 1664525) + 1013904223;
-    return ((state >>> 0) & 0xffffffff) / 0x100000000;
-  };
-}
-
-function drawSampleRackFromBag(baseBag: TileBag, targetSize: number, seed: number): RackTile[] {
-  const bag = new Map(baseBag);
-  const drawCount = Math.min(targetSize, bagTileCount(bag));
-  const rng = seededRandom(seed);
-  const rack: RackTile[] = [];
-
-  for (let drawIndex = 0; drawIndex < drawCount; drawIndex += 1) {
-    const total = bagTileCount(bag);
-    if (total <= 0) {
-      break;
-    }
-
-    const target = rng() * total;
-    let cumulative = 0;
-    let selected: string | null = null;
-
-    for (const [tile, count] of bag.entries()) {
-      if (count <= 0) {
-        continue;
-      }
-
-      cumulative += count;
-      if (target < cumulative) {
-        selected = tile;
-        break;
-      }
-    }
-
-    if (!selected) {
-      break;
-    }
-
-    removeFromBag(bag, selected, 1);
-    rack.push(
-      selected === '?'
-        ? { letter: '', isBlank: true }
-        : { letter: selected, isBlank: false },
-    );
-  }
-
-  return rack;
-}
-
 function evaluateCandidate(
   board: Board,
   spec: MoveSpec,
@@ -547,21 +405,15 @@ function evaluateCandidate(
       direction: spec.direction,
       score: placementEval.score,
       leaveValue: 0,
-      defensePenalty: 0,
-      lookaheadPenalty: 0,
-      opponentReplyScore: 0,
-      risk: SCORE_ONLY_RISK,
       totalEval: placementEval.score,
     };
   }
 
-  const postMoveBoard = applyMoveToBoard(board, spec, blankIndices);
   const remainingRack = buildRemainingRackInventory(rack, rackUsage);
   const leaveValue = evaluateLeaveValue(remainingRack);
-  const defensePenalty = evaluateDefensePenalty(postMoveBoard, placementEval.placedTiles, spec.direction);
-  const risk = assessWordRisk(spec.word, { blocklist: context.blocklist });
 
-  const totalEval = round(placementEval.score + leaveValue - defensePenalty - risk.score * 1.5);
+  // Equity = Score + Leave Value (standard competitive Scrabble ranking)
+  const totalEval = round(placementEval.score + leaveValue);
 
   return {
     word: spec.word,
@@ -570,10 +422,6 @@ function evaluateCandidate(
     direction: spec.direction,
     score: placementEval.score,
     leaveValue,
-    defensePenalty,
-    lookaheadPenalty: 0,
-    opponentReplyScore: 0,
-    risk,
     totalEval,
   };
 }
@@ -662,86 +510,8 @@ function enumerateCandidates(
     );
 }
 
-function estimateOpponentReplyScore(
-  boardAfterMove: Board,
-  remainingPlayerRack: RackInventory,
-  context: SolverContext,
-  seedKey: string,
-): number {
-  const tileBag = createTileBag();
-  subtractBoardTilesFromBag(tileBag, boardAfterMove);
-  subtractInventoryFromBag(tileBag, remainingPlayerRack);
-
-  if (bagTileCount(tileBag) <= 0) {
-    return 0;
-  }
-
-  let bestReplyScore = 0;
-  const baseSeed = hashString(seedKey);
-
-  for (let sample = 0; sample < LOOKAHEAD_RACK_SAMPLES; sample += 1) {
-    const rack = drawSampleRackFromBag(tileBag, MAX_RACK_SIZE, baseSeed + sample * 811);
-    if (rack.length === 0) {
-      continue;
-    }
-
-    const replyMoves = solveMovesInternal(
-      {
-        board: boardAfterMove,
-        rack,
-        lexiconId: context.lexicon.id,
-        topN: 1,
-      },
-      {
-        ...context,
-        mode: 'scoreOnly',
-        applyLookahead: false,
-      },
-    );
-
-    const replyScore = replyMoves[0]?.score ?? 0;
-    if (replyScore > bestReplyScore) {
-      bestReplyScore = replyScore;
-    }
-  }
-
-  return round(bestReplyScore);
-}
-
-function applyLookaheadPenalties(
-  sortedCandidates: CandidateContext[],
-  input: SolveInput,
-  context: SolverContext,
-): void {
-  if (context.mode !== 'full' || !context.applyLookahead || sortedCandidates.length === 0) {
-    return;
-  }
-
-  const topK = Math.min(LOOKAHEAD_TOP_K, sortedCandidates.length);
-  const rack = buildRackInventory(input.rack);
-
-  for (let index = 0; index < topK; index += 1) {
-    const entry = sortedCandidates[index];
-
-    const boardAfterMove = applyMoveToBoard(input.board, entry.spec, entry.blankIndices);
-    const remainingRack = buildRemainingRackInventory(rack, entry.rackUsage);
-    const opponentReplyScore = estimateOpponentReplyScore(
-      boardAfterMove,
-      remainingRack,
-      context,
-      moveKey(entry.candidate),
-    );
-
-    const lookaheadPenalty = round(opponentReplyScore * LOOKAHEAD_REPLY_WEIGHT);
-    entry.candidate.opponentReplyScore = opponentReplyScore;
-    entry.candidate.lookaheadPenalty = lookaheadPenalty;
-    entry.candidate.totalEval = round(entry.candidate.totalEval - lookaheadPenalty);
-  }
-}
-
 function solveMovesInternal(input: SolveInput, context: SolverContext): MoveCandidate[] {
   const candidates = enumerateCandidates(input, context);
-  applyLookaheadPenalties(candidates, input, context);
 
   return candidates
     .sort(
@@ -757,25 +527,18 @@ function solveMovesInternal(input: SolveInput, context: SolverContext): MoveCand
 export function solveMovesWithLexicon(
   input: SolveInput,
   lexicon: SolverLexicon,
-  blocklist: Set<string> = new Set(),
 ): MoveCandidate[] {
   return solveMovesInternal(input, {
     mode: 'full',
     lexicon,
-    blocklist,
-    applyLookahead: true,
   });
 }
 
-export function solveMoves(input: SolveInput, blocklist: Set<string> = new Set()): MoveCandidate[] {
+export function solveMoves(input: SolveInput): MoveCandidate[] {
   const lexicon = getLexiconById(input.lexiconId);
-  return solveMovesWithLexicon(
-    input,
-    {
-      id: lexicon.meta.id,
-      trie: lexicon.trie,
-      words: lexicon.words,
-    },
-    blocklist,
-  );
+  return solveMovesWithLexicon(input, {
+    id: lexicon.meta.id,
+    trie: lexicon.trie,
+    words: lexicon.words,
+  });
 }

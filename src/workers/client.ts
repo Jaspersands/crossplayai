@@ -74,10 +74,19 @@ solverWorker.onmessage = (event: MessageEvent<SolveWorkerResponse>) => {
   pending.resolve(message.payload as MoveCandidate[]);
 };
 
+const OPENAI_API_KEY_STORAGE_KEY = 'crossplayai.openaiApiKey';
+
 export function parseWithWorker(file: File, hint?: ProfileType): Promise<ParsedState> {
   return new Promise((resolve, reject) => {
     const id = nextId('parse');
     parserPending.set(id, { resolve, reject });
+
+    let openaiApiKey: string | undefined;
+    try {
+      openaiApiKey = localStorage.getItem(OPENAI_API_KEY_STORAGE_KEY) ?? undefined;
+    } catch {
+      // localStorage not available
+    }
 
     const payload: ParserWorkerRequest = {
       id,
@@ -85,7 +94,7 @@ export function parseWithWorker(file: File, hint?: ProfileType): Promise<ParsedS
       payload: {
         file,
         hint,
-        openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY as string | undefined,
+        openaiApiKey,
       },
     };
 
@@ -95,7 +104,6 @@ export function parseWithWorker(file: File, hint?: ProfileType): Promise<ParsedS
 
 export function initSolverLexicon(
   lexicon: { id: string; words: string[] },
-  blocklist: string[],
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const id = nextId('lexicon');
@@ -110,7 +118,6 @@ export function initSolverLexicon(
       payload: {
         id: lexicon.id,
         words: lexicon.words,
-        blocklist,
       },
     };
 

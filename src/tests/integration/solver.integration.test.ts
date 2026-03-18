@@ -26,11 +26,10 @@ describe('solver integration', () => {
         topN: 5,
       },
       lexicon,
-      new Set(),
     );
 
     expect(moves.length).toBeGreaterThan(0);
-    expect(moves[0].word).toBe('QUITE');
+    expect(moves[0].word).toBe('QUIZ');
     expect(moves[0].totalEval).toBeGreaterThanOrEqual(moves.at(1)?.totalEval ?? 0);
   });
 });

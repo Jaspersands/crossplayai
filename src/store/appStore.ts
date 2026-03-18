@@ -4,7 +4,6 @@ import { createEmptyBoard } from '../lib/boardUtils';
 import { buildCorrectionExportPayload, downloadCorrectionJson } from '../lib/correctionExport';
 import {
   getLexiconSnapshot,
-  loadCrossplayBlocklist,
   loadDictionary,
   type LexiconSnapshot,
 } from '../lib/dictionary';
@@ -25,7 +24,6 @@ type AppStore = {
   status: AppStatus;
   error: string | null;
   dictionaryMeta: DictionaryMeta | null;
-  blocklist: Set<string>;
   lexiconSnapshot: LexiconSnapshot | null;
   parsedState: ParsedState | null;
   board: Board;
@@ -35,7 +33,6 @@ type AppStore = {
   confirmed: boolean;
   moves: MoveCandidate[];
   selectedMoveIndex: number;
-  hideHighRisk: boolean;
   parseConfidence: number;
   loadError: (message: string) => void;
   loadDictionaryAndInitialize: () => Promise<void>;
@@ -48,7 +45,6 @@ type AppStore = {
   exportCorrections: () => CorrectionExportPayload;
   solve: () => Promise<void>;
   setSelectedMoveIndex: (index: number) => void;
-  setHideHighRisk: (hidden: boolean) => void;
   reset: () => void;
 };
 
@@ -103,7 +99,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   status: 'idle',
   error: null,
   dictionaryMeta: null,
-  blocklist: new Set(),
   lexiconSnapshot: null,
   parsedState: null,
   board: createEmptyBoard(),
@@ -113,7 +108,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   confirmed: false,
   moves: [],
   selectedMoveIndex: 0,
-  hideHighRisk: false,
   parseConfidence: 0,
 
   loadError: (message) => {
@@ -128,14 +122,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
     try {
       const dictionaryMeta = await loadDictionary();
       const snapshot = getLexiconSnapshot(dictionaryMeta.id);
-      const blocklist = await loadCrossplayBlocklist();
-      await initSolverLexicon(snapshot, Array.from(blocklist));
+      await initSolverLexicon(snapshot);
 
       set({
         status: 'idle',
         dictionaryMeta,
         lexiconSnapshot: snapshot,
-        blocklist,
       });
     } catch (error) {
       set({
@@ -278,10 +270,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   setSelectedMoveIndex: (index) => {
     set({ selectedMoveIndex: index });
-  },
-
-  setHideHighRisk: (hideHighRisk) => {
-    set({ hideHighRisk });
   },
 
   reset: () => {

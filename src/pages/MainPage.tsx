@@ -17,7 +17,6 @@ export function MainPage(): JSX.Element {
   const parsedState = useAppStore((state) => state.parsedState);
   const moves = useAppStore((state) => state.moves);
   const selectedMoveIndex = useAppStore((state) => state.selectedMoveIndex);
-  const hideHighRisk = useAppStore((state) => state.hideHighRisk);
   const confirmed = useAppStore((state) => state.confirmed);
   const selectedProfileHint = useAppStore((state) => state.selectedProfileHint);
 
@@ -32,7 +31,6 @@ export function MainPage(): JSX.Element {
   const loadError = useAppStore((state) => state.loadError);
   const solve = useAppStore((state) => state.solve);
   const setSelectedMoveIndex = useAppStore((state) => state.setSelectedMoveIndex);
-  const setHideHighRisk = useAppStore((state) => state.setHideHighRisk);
   const reset = useAppStore((state) => state.reset);
 
   useEffect(() => {
@@ -47,10 +45,7 @@ export function MainPage(): JSX.Element {
     return set;
   }, [parsedState]);
 
-  const visibleMoves = useMemo(
-    () => (hideHighRisk ? moves.filter((move) => move.risk.label !== 'high') : moves),
-    [hideHighRisk, moves],
-  );
+  const visibleMoves = moves;
 
   useEffect(() => {
     if (selectedMoveIndex >= visibleMoves.length) {
@@ -140,8 +135,6 @@ export function MainPage(): JSX.Element {
           moves={visibleMoves}
           selectedMoveIndex={selectedMoveIndex}
           onSelect={setSelectedMoveIndex}
-          hideHighRisk={hideHighRisk}
-          onToggleHideHighRisk={setHideHighRisk}
         />
       </div>
     </main>

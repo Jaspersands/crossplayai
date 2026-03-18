@@ -1,7 +1,6 @@
 import {
   DEFAULT_DICTIONARY_URL,
   FALLBACK_DICTIONARY_URL,
-  LOCAL_STORAGE_BLOCKLIST_KEY,
   LOCAL_STORAGE_DICTIONARY_KEY,
 } from '../config/solver';
 import type { DictionaryMeta, DictionarySource } from '../types/game';
@@ -28,7 +27,6 @@ type CachedDictionary = {
 };
 
 const lexiconRegistry = new Map<string, Lexicon>();
-const blocklistRegistry = new Set<string>();
 
 function hash(input: string): string {
   let h = 2166136261;
@@ -187,47 +185,3 @@ export function getAnyLoadedLexicon(): Lexicon | null {
   return values[0] ?? null;
 }
 
-export async function loadCrossplayBlocklist(): Promise<Set<string>> {
-  if (blocklistRegistry.size > 0) {
-    return blocklistRegistry;
-  }
-
-  try {
-    const cached = localStorage.getItem(LOCAL_STORAGE_BLOCKLIST_KEY);
-    if (cached) {
-      for (const line of cached.split(/\r?\n/)) {
-        const word = sanitizeWord(line);
-        if (word) {
-          blocklistRegistry.add(word);
-        }
-      }
-      if (blocklistRegistry.size > 0) {
-        return blocklistRegistry;
-      }
-    }
-  } catch {
-    // Ignore cache misses.
-  }
-
-  const response = await fetch('/data/crossplay_blocklist.txt', { cache: 'force-cache' });
-  if (!response.ok) {
-    return blocklistRegistry;
-  }
-
-  const text = await response.text();
-  const lines = text.split(/\r?\n/);
-  for (const line of lines) {
-    const word = sanitizeWord(line);
-    if (word) {
-      blocklistRegistry.add(word);
-    }
-  }
-
-  try {
-    localStorage.setItem(LOCAL_STORAGE_BLOCKLIST_KEY, text);
-  } catch {
-    // Ignore storage errors.
-  }
-
-  return blocklistRegistry;
-}

@@ -5,7 +5,6 @@ import { createTrie } from '../lib/trie';
 import type { SolveWorkerRequest, SolveWorkerResponse } from '../types/game';
 
 let lexicon: SolverLexicon | null = null;
-let blocklist = new Set<string>();
 
 self.onmessage = async (event: MessageEvent<SolveWorkerRequest>) => {
   const message = event.data;
@@ -23,12 +22,6 @@ self.onmessage = async (event: MessageEvent<SolveWorkerRequest>) => {
         words,
         trie: createTrie(words),
       };
-
-      blocklist = new Set(
-        (message.payload.blocklist ?? [])
-          .map((word) => word.toUpperCase().replace(/[^A-Z]/g, ''))
-          .filter(Boolean),
-      );
 
       const response: SolveWorkerResponse = {
         id: message.id,
@@ -58,7 +51,7 @@ self.onmessage = async (event: MessageEvent<SolveWorkerRequest>) => {
       throw new Error('Solver lexicon is not initialized.');
     }
 
-    const moves = solveMovesWithLexicon(message.payload, lexicon, blocklist);
+    const moves = solveMovesWithLexicon(message.payload, lexicon);
     const response: SolveWorkerResponse = {
       id: message.id,
       type: 'solveResult',
