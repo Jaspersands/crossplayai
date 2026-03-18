@@ -260,15 +260,17 @@ header p {
   display: grid;
   width: max-content;
   margin: 0 auto;
-  gap: 2px;
+  gap: var(--grid-gap, 2px);
 }
 
 .board-grid {
+  --grid-gap: 2px;
   --cell-size: clamp(26px, 2.25vw, 42px);
   grid-template-columns: repeat(15, var(--cell-size));
 }
 
 .preview-grid {
+  --grid-gap: 2px;
   --cell-size: clamp(24px, 2.05vw, 38px);
   grid-template-columns: repeat(15, var(--cell-size));
 }
@@ -314,7 +316,7 @@ header p {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 0.62rem;
+  font-size: clamp(0.45rem, calc(var(--cell-size) * 0.26), 0.62rem);
   font-weight: 800;
   letter-spacing: 0.02em;
   pointer-events: none;
@@ -344,10 +346,11 @@ header p {
   width: 100%;
   height: var(--cell-size);
   border: none;
+  padding: 0;
   text-align: center;
   text-transform: uppercase;
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: clamp(0.68rem, calc(var(--cell-size) * 0.48), 0.92rem);
   background: transparent;
   position: relative;
   z-index: 2;
@@ -406,7 +409,7 @@ header p {
 .preview-cell {
   display: grid;
   place-items: center;
-  font-size: 0.74rem;
+  font-size: clamp(0.56rem, calc(var(--cell-size) * 0.42), 0.74rem);
   text-transform: uppercase;
   font-weight: 700;
 }
@@ -453,7 +456,7 @@ header p {
   text-align: center;
   text-transform: uppercase;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
 
 .rack-blank-toggle {
@@ -639,11 +642,17 @@ button.btn-danger {
   }
 
   .board-grid {
-    --cell-size: clamp(23px, 5.9vw, 33px);
+    --grid-gap: 1px;
+    --cell-size: clamp(18px, 5.15vw, 27px);
   }
 
   .preview-grid {
-    --cell-size: clamp(22px, 5.6vw, 32px);
+    --grid-gap: 1px;
+    --cell-size: clamp(17px, 4.95vw, 26px);
+  }
+
+  .board-grid-wrap {
+    padding: 0.2rem;
   }
 
   .actions .action-buttons {
@@ -658,6 +667,10 @@ button.btn-danger {
     min-height: 34px;
     min-width: 34px;
     padding: 0.3rem 0.5rem;
+  }
+
+  .rack-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

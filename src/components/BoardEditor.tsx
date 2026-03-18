@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { PREMIUM_BOARD } from '../constants/board';
 import type { Board } from '../types/game';
 
@@ -29,6 +29,10 @@ export function BoardEditor({ board, lowConfidenceSet, onCellChange, onCellClear
   function normalizeTypedValue(raw: string): string {
     const normalized = raw.toUpperCase().replace(/[^A-Z]/g, '');
     return normalized.slice(-1);
+  }
+
+  function selectInputValue(event: FocusEvent<HTMLInputElement>): void {
+    event.currentTarget.select();
   }
 
   function handleCellKeyDown(
@@ -112,6 +116,8 @@ export function BoardEditor({ board, lowConfidenceSet, onCellChange, onCellClear
                     value={cell.letter ?? ''}
                     onChange={(event) => onCellChange(rowIndex, colIndex, normalizeTypedValue(event.target.value), cell.isBlank)}
                     onKeyDown={(event) => handleCellKeyDown(event, rowIndex, colIndex, cell.isBlank)}
+                    onFocus={selectInputValue}
+                    onClick={(event) => event.currentTarget.select()}
                     ref={(node) => {
                       if (!inputRefs.current[rowIndex]) {
                         inputRefs.current[rowIndex] = [];
