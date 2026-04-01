@@ -34,6 +34,11 @@ export type MoveCandidate = {
   col: number;
   direction: Direction;
   score: number;
+  crossWordCount: number;
+  crossWordLetters: number;
+  adjacentExistingTileCount: number;
+  maxAdjacentExistingTiles: number;
+  threadedTileCount: number;
   leaveValue: number;
   totalEval: number;
 };

@@ -356,34 +356,6 @@ header p {
   z-index: 2;
 }
 
-.board-cell .cell-controls {
-  display: none;
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 0;
-  z-index: 10;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.2rem;
-  width: max-content;
-  gap: 0.2rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.board-cell:hover .cell-controls,
-.board-cell:focus-within .cell-controls,
-.board-cell.is-focused .cell-controls {
-  display: inline-flex;
-}
-
-.board-cell .cell-controls button {
-  min-height: 30px;
-  min-width: 30px;
-  padding: 0.24rem 0.42rem;
-  font-size: 0.72rem;
-}
-
 .board-cell.low-confidence {
   outline: 2px solid var(--warning);
   outline-offset: -1px;
@@ -528,6 +500,21 @@ button.btn-danger {
   gap: 0.5rem;
 }
 
+.results-sections {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.results-section {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.result-section-header h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
 .results-header label {
   font-size: 0.88rem;
   color: var(--muted);
@@ -609,6 +596,17 @@ button.btn-danger {
   font-size: 0.84rem;
 }
 
+.result-meta {
+  margin: 0;
+  color: var(--primary-strong);
+  font-size: 0.79rem;
+  font-weight: 700;
+}
+
+.section-empty {
+  margin-top: 0;
+}
+
 .copy-btn {
   font-size: 0.78rem;
   margin-top: 0.15rem;
@@ -663,24 +661,7 @@ button.btn-danger {
     padding: 0.45rem 0.6rem;
   }
 
-  .board-cell .cell-controls button {
-    min-height: 34px;
-    min-width: 34px;
-    padding: 0.3rem 0.5rem;
-  }
-
   .rack-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (hover: none) {
-  .board-cell:hover .cell-controls {
-    display: none;
-  }
-
-  .board-cell:focus-within .cell-controls,
-  .board-cell.is-focused .cell-controls {
-    display: inline-flex;
   }
 }

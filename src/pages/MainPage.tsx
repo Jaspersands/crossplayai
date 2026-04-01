@@ -17,16 +17,13 @@ export function MainPage(): JSX.Element {
   const parsedState = useAppStore((state) => state.parsedState);
   const moves = useAppStore((state) => state.moves);
   const selectedMoveIndex = useAppStore((state) => state.selectedMoveIndex);
-  const confirmed = useAppStore((state) => state.confirmed);
   const selectedProfileHint = useAppStore((state) => state.selectedProfileHint);
 
   const loadDictionaryAndInitialize = useAppStore((state) => state.loadDictionaryAndInitialize);
   const parseScreenshot = useAppStore((state) => state.parseScreenshot);
   const setProfileHint = useAppStore((state) => state.setProfileHint);
   const updateBoardCell = useAppStore((state) => state.updateBoardCell);
-  const clearBoardCell = useAppStore((state) => state.clearBoardCell);
   const updateRackTile = useAppStore((state) => state.updateRackTile);
-  const confirmBoardState = useAppStore((state) => state.confirmBoardState);
   const exportCorrections = useAppStore((state) => state.exportCorrections);
   const loadError = useAppStore((state) => state.loadError);
   const solve = useAppStore((state) => state.solve);
@@ -56,8 +53,11 @@ export function MainPage(): JSX.Element {
   const selectedMove = visibleMoves[selectedMoveIndex];
 
   const canSolve =
-    status !== 'solving' && status !== 'loadingDictionary' && confirmed && dictionaryMeta !== null;
-  const canExport = status !== 'parsing' && confirmed && parsedState !== null;
+    status !== 'solving' &&
+    status !== 'loadingDictionary' &&
+    dictionaryMeta !== null &&
+    parsedState !== null;
+  const canExport = status !== 'parsing' && parsedState !== null;
 
   return (
     <main className="app-shell">
@@ -87,25 +87,16 @@ export function MainPage(): JSX.Element {
           board={board}
           lowConfidenceSet={lowConfidenceSet}
           onCellChange={updateBoardCell}
-          onCellClear={clearBoardCell}
         />
         <RackEditor rack={rack} onRackChange={updateRackTile} />
       </div>
 
       <section className="panel actions">
-        <h2>4. Confirm, Export, and Solve</h2>
+        <h2>4. Export and Solve</h2>
         <p className="panel-note">
-          Confirm once after edits, then export corrections JSON and/or run the solver.
+          Edit the OCR result as needed, then export corrections JSON and/or run the solver.
         </p>
         <div className="action-buttons">
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={confirmBoardState}
-            disabled={status === 'parsing'}
-          >
-            Confirm board state
-          </button>
           <button
             type="button"
             className="btn-secondary"

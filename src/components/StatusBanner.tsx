@@ -12,7 +12,7 @@ function statusMessage(status: string): string {
     case 'parsing':
       return 'Parsing screenshot...';
     case 'readyToConfirm':
-      return 'Review OCR output and confirm board state.';
+      return 'Review OCR output, then solve or export.';
     case 'solving':
       return 'Computing best moves...';
     case 'done':

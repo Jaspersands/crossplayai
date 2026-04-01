@@ -13,6 +13,11 @@ export type PlacementEvaluation = {
   score: number;
   placedTiles: PlacementPosition[];
   usedRackTiles: number;
+  crossWordCount: number;
+  crossWordLetters: number;
+  adjacentExistingTileCount: number;
+  maxAdjacentExistingTiles: number;
+  threadedTileCount: number;
 };
 
 export type MoveSpec = {
@@ -47,6 +52,21 @@ function getPremium(row: number, col: number): { letterMultiplier: number; wordM
     default:
       return { letterMultiplier: 1, wordMultiplier: 1 };
   }
+}
+
+function countAdjacentExistingTiles(board: Board, row: number, col: number): number {
+  const neighbors = [
+    [row - 1, col],
+    [row + 1, col],
+    [row, col - 1],
+    [row, col + 1],
+  ];
+
+  return neighbors.reduce(
+    (count, [neighborRow, neighborCol]) =>
+      count + (isInBounds(neighborRow, neighborCol) && board[neighborRow][neighborCol].letter ? 1 : 0),
+    0,
+  );
 }
 
 function buildPerpendicularWord(
@@ -112,6 +132,11 @@ export function evaluatePlacement(
   let mainWordScore = 0;
   let mainWordMultiplier = 1;
   let crossWordScore = 0;
+  let crossWordCount = 0;
+  let crossWordLetters = 0;
+  let adjacentExistingTileCount = 0;
+  let maxAdjacentExistingTiles = 0;
+  let threadedTileCount = 0;
 
   const placedTiles: PlacementPosition[] = [];
 
@@ -140,8 +165,17 @@ export function evaluatePlacement(
 
     placedTiles.push({ row, col, letter, isBlank });
 
+    const adjacentExistingTiles = countAdjacentExistingTiles(board, row, col);
+    adjacentExistingTileCount += adjacentExistingTiles;
+    maxAdjacentExistingTiles = Math.max(maxAdjacentExistingTiles, adjacentExistingTiles);
+    if (adjacentExistingTiles >= 2) {
+      threadedTileCount += 1;
+    }
+
     const perpendicular = buildPerpendicularWord(board, row, col, move.direction, letter);
     if (perpendicular.word.length > 1) {
+      crossWordCount += 1;
+      crossWordLetters += perpendicular.word.length;
       let perpendicularScore = 0;
       let perpendicularMultiplier = 1;
       for (const cell of perpendicular.cells) {
@@ -169,6 +203,11 @@ export function evaluatePlacement(
     score,
     placedTiles,
     usedRackTiles,
+    crossWordCount,
+    crossWordLetters,
+    adjacentExistingTileCount,
+    maxAdjacentExistingTiles,
+    threadedTileCount,
   };
 }
 

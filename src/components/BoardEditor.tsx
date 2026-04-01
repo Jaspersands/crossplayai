@@ -1,4 +1,4 @@
-import { useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { useRef, type FocusEvent, type KeyboardEvent } from 'react';
 import { PREMIUM_BOARD } from '../constants/board';
 import type { Board } from '../types/game';
 
@@ -6,11 +6,9 @@ type BoardEditorProps = {
   board: Board;
   lowConfidenceSet: Set<string>;
   onCellChange: (row: number, col: number, letter: string, isBlank: boolean) => void;
-  onCellClear: (row: number, col: number) => void;
 };
 
-export function BoardEditor({ board, lowConfidenceSet, onCellChange, onCellClear }: BoardEditorProps): JSX.Element {
-  const [focusedKey, setFocusedKey] = useState<string | null>(null);
+export function BoardEditor({ board, lowConfidenceSet, onCellChange }: BoardEditorProps): JSX.Element {
   const inputRefs = useRef<Array<Array<HTMLInputElement | null>>>([]);
 
   const premiumLabelByType: Record<string, string> = {
@@ -101,14 +99,7 @@ export function BoardEditor({ board, lowConfidenceSet, onCellChange, onCellClear
               return (
                 <div
                   key={key}
-                  className={`board-cell ${premiumClass} ${lowConfidence ? 'low-confidence' : ''} ${cell.letter ? 'filled' : ''} ${cell.isBlank ? 'blank-tile' : ''} ${focusedKey === key ? 'is-focused' : ''}`}
-                  onFocusCapture={() => setFocusedKey(key)}
-                  onBlurCapture={(event) => {
-                    const next = event.relatedTarget as Node | null;
-                    if (!event.currentTarget.contains(next)) {
-                      setFocusedKey((current) => (current === key ? null : current));
-                    }
-                  }}
+                  className={`board-cell ${premiumClass} ${lowConfidence ? 'low-confidence' : ''} ${cell.letter ? 'filled' : ''} ${cell.isBlank ? 'blank-tile' : ''}`}
                 >
                   {!cell.letter && premiumLabel ? <span className="premium-label">{premiumLabel}</span> : null}
                   <input
@@ -130,20 +121,6 @@ export function BoardEditor({ board, lowConfidenceSet, onCellChange, onCellClear
                     spellCheck={false}
                     maxLength={1}
                   />
-                  <div className="cell-controls">
-                    <button
-                      type="button"
-                      title="Toggle blank tile"
-                      onClick={() =>
-                        onCellChange(rowIndex, colIndex, cell.letter ?? '', !cell.isBlank)
-                      }
-                    >
-                      {cell.isBlank ? 'Blank' : 'Letter'}
-                    </button>
-                    <button type="button" title="Clear cell and blank flag" onClick={() => onCellClear(rowIndex, colIndex)}>
-                      Clear
-                    </button>
-                  </div>
                 </div>
               );
             }),

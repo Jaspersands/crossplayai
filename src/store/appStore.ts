@@ -30,7 +30,6 @@ type AppStore = {
   rack: RackTile[];
   sourceFilename: string | null;
   selectedProfileHint?: ProfileType;
-  confirmed: boolean;
   moves: MoveCandidate[];
   selectedMoveIndex: number;
   parseConfidence: number;
@@ -41,12 +40,15 @@ type AppStore = {
   updateBoardCell: (row: number, col: number, letter: string, isBlank: boolean) => void;
   clearBoardCell: (row: number, col: number) => void;
   updateRackTile: (index: number, letter: string, isBlank: boolean) => void;
-  confirmBoardState: () => void;
   exportCorrections: () => CorrectionExportPayload;
   solve: () => Promise<void>;
   setSelectedMoveIndex: (index: number) => void;
   reset: () => void;
 };
+
+function reviewStatus(parsedState: ParsedState | null): AppStatus {
+  return parsedState ? 'readyToConfirm' : 'idle';
+}
 
 function normalizeRack(rack: RackTile[]): RackTile[] {
   const normalized = rack
@@ -105,7 +107,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   rack: normalizeRack([]),
   sourceFilename: null,
   selectedProfileHint: undefined,
-  confirmed: false,
   moves: [],
   selectedMoveIndex: 0,
   parseConfidence: 0,
@@ -138,7 +139,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   parseScreenshot: async (file: File) => {
-    set({ status: 'parsing', error: null, confirmed: false, moves: [], selectedMoveIndex: 0 });
+    set({ status: 'parsing', error: null, moves: [], selectedMoveIndex: 0 });
     try {
       const parsed = await parseWithWorker(file, get().selectedProfileHint);
       set({
@@ -148,7 +149,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
         rack: normalizeRack(parsed.rack),
         sourceFilename: file.name,
         parseConfidence: parsed.confidence,
-        confirmed: false,
       });
     } catch (error) {
       set({
@@ -165,7 +165,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
   updateBoardCell: (row, col, letter, isBlank) => {
     const normalized = letter.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
     set((state) => ({
-      confirmed: false,
+      error: null,
+      status: reviewStatus(state.parsedState),
+      moves: [],
+      selectedMoveIndex: 0,
       board: updateBoardImmutable(state.board, row, col, {
         letter: normalized || null,
         isBlank,
@@ -175,7 +178,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   clearBoardCell: (row, col) => {
     set((state) => ({
-      confirmed: false,
+      error: null,
+      status: reviewStatus(state.parsedState),
+      moves: [],
+      selectedMoveIndex: 0,
       board: updateBoardImmutable(state.board, row, col, {
         letter: null,
         isBlank: false,
@@ -201,13 +207,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
       return {
         rack: nextRack.filter((_, i) => i <= 6),
-        confirmed: false,
+        error: null,
+        status: reviewStatus(state.parsedState),
+        moves: [],
+        selectedMoveIndex: 0,
       };
     });
-  },
-
-  confirmBoardState: () => {
-    set({ confirmed: true, status: 'idle' });
   },
 
   exportCorrections: () => {
@@ -215,9 +220,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
     if (!state.parsedState) {
       throw new Error('No parsed screenshot available for export.');
-    }
-    if (!state.confirmed) {
-      throw new Error('Confirm board state before exporting JSON.');
     }
 
     const payload = buildCorrectionExportPayload({
@@ -240,9 +242,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
       set({ status: 'error', error: 'Dictionary is not loaded yet.' });
       return;
     }
-
-    if (!state.confirmed) {
-      set({ status: 'error', error: 'Please confirm the board and rack before solving.' });
+    if (!state.parsedState) {
+      set({ status: 'error', error: 'Upload a screenshot before solving.' });
       return;
     }
 
@@ -280,7 +281,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
       board: createEmptyBoard(),
       rack: normalizeRack([]),
       sourceFilename: null,
-      confirmed: false,
       moves: [],
       selectedMoveIndex: 0,
       parseConfidence: 0,

@@ -34,7 +34,6 @@ describe('route rendering', () => {
 
     expect(screen.getByRole('heading', { name: 'Crossplay Scrabble Move Finder' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '1. Upload Crossplay Screenshot' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Confirm board state' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Solve top moves' })).toBeInTheDocument();
 
     const exportButton = screen.getByRole('button', { name: 'Export corrections JSON' });

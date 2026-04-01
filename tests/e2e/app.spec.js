@@ -5,7 +5,7 @@ test('loads upload and solve workflow shell', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: 'Crossplay Scrabble Move Finder' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '1. Upload Crossplay Screenshot' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Confirm board state' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Export corrections JSON' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Solve top moves' })).toBeVisible();
 });
 
@@ -22,12 +22,8 @@ test('corrections route reuses main flow and supports export json', async ({ pag
 
   await page.locator('input[type="file"]').setInputFiles(blankScreenshotPath);
 
-  const confirmButton = page.getByRole('button', { name: 'Confirm board state' });
-  await expect(confirmButton).toBeEnabled({ timeout: 30000 });
-  await confirmButton.click();
-
   const exportButton = page.getByRole('button', { name: 'Export corrections JSON' });
-  await expect(exportButton).toBeEnabled();
+  await expect(exportButton).toBeEnabled({ timeout: 30000 });
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),

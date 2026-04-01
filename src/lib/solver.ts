@@ -404,6 +404,11 @@ function evaluateCandidate(
       col: spec.col,
       direction: spec.direction,
       score: placementEval.score,
+      crossWordCount: placementEval.crossWordCount,
+      crossWordLetters: placementEval.crossWordLetters,
+      adjacentExistingTileCount: placementEval.adjacentExistingTileCount,
+      maxAdjacentExistingTiles: placementEval.maxAdjacentExistingTiles,
+      threadedTileCount: placementEval.threadedTileCount,
       leaveValue: 0,
       totalEval: placementEval.score,
     };
@@ -421,6 +426,11 @@ function evaluateCandidate(
     col: spec.col,
     direction: spec.direction,
     score: placementEval.score,
+    crossWordCount: placementEval.crossWordCount,
+    crossWordLetters: placementEval.crossWordLetters,
+    adjacentExistingTileCount: placementEval.adjacentExistingTileCount,
+    maxAdjacentExistingTiles: placementEval.maxAdjacentExistingTiles,
+    threadedTileCount: placementEval.threadedTileCount,
     leaveValue,
     totalEval,
   };

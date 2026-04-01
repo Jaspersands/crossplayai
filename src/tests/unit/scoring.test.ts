@@ -67,4 +67,29 @@ describe('scoring', () => {
 
     expect(score.score).toBe(3);
   });
+
+  it('tracks cross-word density and clustered hook placements', () => {
+    const board = createEmptyBoard();
+    board[7][6] = { letter: 'A', isBlank: false };
+    board[7][8] = { letter: 'A', isBlank: false };
+    board[6][7] = { letter: 'N', isBlank: false };
+    board[8][7] = { letter: 'T', isBlank: false };
+
+    const score = evaluatePlacement(
+      board,
+      {
+        word: 'ABA',
+        row: 7,
+        col: 6,
+        direction: 'across',
+      },
+      new Set(),
+    );
+
+    expect(score.crossWordCount).toBe(1);
+    expect(score.crossWordLetters).toBe(3);
+    expect(score.adjacentExistingTileCount).toBe(4);
+    expect(score.maxAdjacentExistingTiles).toBe(4);
+    expect(score.threadedTileCount).toBe(1);
+  });
 });

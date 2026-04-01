@@ -1,4 +1,4 @@
-export const DEFAULT_TOP_N = 10;
+export const DEFAULT_TOP_N = 80;
 
 export const DEFAULT_DICTIONARY_URL =
   'https://www.freescrabbledictionary.com/twl06/download/twl06.txt';

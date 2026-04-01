@@ -18,7 +18,6 @@ export function CorrectionsPage(): JSX.Element {
   const parseScreenshot = useCorrectionStore((state) => state.parseScreenshot);
   const setProfileHint = useCorrectionStore((state) => state.setProfileHint);
   const updateBoardCell = useCorrectionStore((state) => state.updateBoardCell);
-  const clearBoardCell = useCorrectionStore((state) => state.clearBoardCell);
   const updateRackTile = useCorrectionStore((state) => state.updateRackTile);
   const confirmCorrections = useCorrectionStore((state) => state.confirmCorrections);
   const exportCorrections = useCorrectionStore((state) => state.exportCorrections);
@@ -58,7 +57,6 @@ export function CorrectionsPage(): JSX.Element {
           board={board}
           lowConfidenceSet={lowConfidenceSet}
           onCellChange={updateBoardCell}
-          onCellClear={clearBoardCell}
         />
         <RackEditor rack={rack} onRackChange={updateRackTile} />
       </div>

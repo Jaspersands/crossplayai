@@ -13,7 +13,6 @@ describe('BoardEditor keyboard interactions', () => {
         board={board}
         lowConfidenceSet={new Set()}
         onCellChange={onCellChange}
-        onCellClear={vi.fn()}
       />,
     );
 
@@ -35,7 +34,6 @@ describe('BoardEditor keyboard interactions', () => {
         board={board}
         lowConfidenceSet={new Set()}
         onCellChange={onCellChange}
-        onCellClear={vi.fn()}
       />,
     );
 
@@ -57,7 +55,6 @@ describe('BoardEditor keyboard interactions', () => {
         board={board}
         lowConfidenceSet={new Set()}
         onCellChange={vi.fn()}
-        onCellClear={vi.fn()}
       />,
     );
 
@@ -87,7 +84,6 @@ describe('BoardEditor keyboard interactions', () => {
         board={board}
         lowConfidenceSet={new Set()}
         onCellChange={onCellChange}
-        onCellClear={vi.fn()}
       />,
     );
 
@@ -97,22 +93,17 @@ describe('BoardEditor keyboard interactions', () => {
     expect(onCellChange).toHaveBeenCalledWith(0, 0, 'B', false);
   });
 
-  it('keeps clear button behavior unchanged', () => {
+  it('does not render inline tile action buttons', () => {
     const board = createEmptyBoard();
-    const onCellClear = vi.fn();
 
     render(
       <BoardEditor
         board={board}
         lowConfidenceSet={new Set()}
         onCellChange={vi.fn()}
-        onCellClear={onCellClear}
       />,
     );
 
-    const clearButton = screen.getAllByRole('button', { name: 'Clear' })[0];
-    fireEvent.click(clearButton);
-
-    expect(onCellClear).toHaveBeenCalledWith(0, 0);
+    expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
   });
 });
